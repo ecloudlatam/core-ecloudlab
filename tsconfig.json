@@ -26,6 +26,7 @@
       ],
       "@app/supabase": ["libs/supabase/src"],
       "@app/supabase/*": ["libs/supabase/src/*"],
+      "@app/auth": ["libs/auth/src"]
     }
   }
 }

@@ -5,11 +5,13 @@ import { SupabaseLibModule } from '@app/supabase';
 import { ConfigModule } from '@nestjs/config';
 
 import {AppRepository} from "./infrastructure/apps.repository"
+import { AuthModule } from '@app/auth';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
-    SupabaseLibModule
+    SupabaseLibModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [
