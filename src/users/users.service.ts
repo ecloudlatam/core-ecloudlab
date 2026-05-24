@@ -6,8 +6,15 @@ export class UsersService {
 
     constructor(private readonly userReposity: UsersRepository ){}
 
-    async create(body: any): Promise<any>{
-        const data = await this.userReposity.create(body)
+    async create(body: any, appId: string): Promise<any>{
+
+        // Aquí construyes el objeto final unificado
+        const payload = {
+            ...body,
+            app_id: appId,
+        };
+
+        const data = await this.userReposity.create(payload)
         return {"status":data}
     }
 

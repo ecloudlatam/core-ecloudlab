@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
 import { UsersService } from "../users.service";
 import { ApiKeyGuard } from "src/guards";
 
@@ -15,13 +15,9 @@ export class UsersControllers{
     }
 
     @Post()
-    async create(@Req() request: any){
+    async create(@Req() request: any, @Body() createUserDto: any){
         const app = request['apps']
-        const body = {
-            ...request.body,
-            app_id: app.id
-        }
-        const resp = await this.userService.create(body)
+        const resp = await this.userService.create(createUserDto, app.id)
         return resp
     }
 }
