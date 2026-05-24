@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Inject, Logger, Post, UseGuards } from '@nestjs/common';
-import { AppsService } from '../apps.service';
-import {CreateAppDto} from '../../domain/dtos/create-apps.dto'
-import { AppEntity } from '../../domain/apps.entity';
+import { AppsService } from './apps.service';
+import {CreateAppDto} from '../domain/dtos/create-apps.dto'
+import { AppEntity } from '../domain/apps.entity';
 import { MasterKeyGuardTsGuard } from 'src/guards';
 
 @Controller()

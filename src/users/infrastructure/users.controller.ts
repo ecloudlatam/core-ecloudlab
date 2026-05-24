@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
-import { UsersService } from "../users.service";
+import { UsersService } from "./users.service";
 import { ApiKeyGuard } from "src/guards";
 
 @Controller()

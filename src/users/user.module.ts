@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
-import { UsersControllers } from "./controllers/users.controller";
+import { UsersControllers } from "./infrastructure/users.controller";
 import { SupabaseLibModule } from "@app/supabase";
-import { UsersService } from "./users.service";
+import { UsersService } from "./infrastructure/users.service";
 import { UsersRepository } from "./infrastructure/users.repository";
 import {AuthModule} from "@app/auth"
 

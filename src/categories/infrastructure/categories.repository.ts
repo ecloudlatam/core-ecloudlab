@@ -14,8 +14,12 @@ export class CategoriesRepository{
     async create(categories: any){
         const db = this.supabase.getClient()
         const data = await db.from("categories").insert([categories]).select()
-                    this.logger.log(data)
+        return data
+    }
 
+    async findone(uuid: string): Promise<any>{
+        const db = this.supabase.getClient()
+        const data = await db.from("categories").select("id").eq("id",uuid)
         return data
     }
 }

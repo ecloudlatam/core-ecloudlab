@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from './infrastructure/users.repository';
+import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
@@ -8,7 +8,6 @@ export class UsersService {
 
     async create(body: any, appId: string): Promise<any>{
 
-        // Aquí construyes el objeto final unificado
         const payload = {
             ...body,
             app_id: appId,

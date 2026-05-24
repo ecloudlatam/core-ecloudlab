@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiKeyGuard } from "src/guards";
-import { CategoriesService } from "../categories.service";
+import { CategoriesService } from "./categories.service";
 
 
 @Controller()
@@ -21,7 +21,6 @@ export class CategoriesController{
 
         try {
             const app = request['apps']
-            this.logger.log(app)
         return this.categoriesService.create(createCategoriesDto, app.id)
         } catch (error) {
             throw new Error(error)

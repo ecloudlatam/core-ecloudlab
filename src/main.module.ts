@@ -29,6 +29,10 @@ import { CategoriesModule } from "./categories/categories.module";
                 path: "categories",
                 module: CategoriesModule
 
+            },
+            {
+                path:"products",
+                module: ProductsModules
             }
         ])
     ],

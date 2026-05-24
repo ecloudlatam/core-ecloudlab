@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AppsController } from './infrastructure/controllers/apps.controller';
+import { AppsController } from './infrastructure/apps.controller';
 import { SupabaseLibModule } from '@app/supabase';
 import { ConfigModule } from '@nestjs/config';
 
