@@ -20,15 +20,19 @@ export class AuthService {
     };
   }
 
-  async validarApiKey(hashedApiKey: string): Promise<any> {
+  async validarApiKey(x_api_key: string): Promise<any> {
+
+    const api_key_hash = crypto
+      .createHash('sha256')
+      .update(x_api_key)
+      .digest('hex');
+    
     const supabase = this.supabaseService.getClient();
     
-    // Buscar en la tabla 'apps' una API key que coincida con el hash
     const { data, error } = await supabase
       .from('apps')
       .select('*')
-      .eq('api_key_hash', hashedApiKey)
-      .eq('is_active', true)
+      .eq('api_key_hash', api_key_hash)
       .single();
 
     if (error || !data) {

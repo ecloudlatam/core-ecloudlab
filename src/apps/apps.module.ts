@@ -1,26 +1,23 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppsController } from './infrastructure/controllers/apps.controller';
 import { SupabaseLibModule } from '@app/supabase';
 import { ConfigModule } from '@nestjs/config';
 
 import {AppRepository} from "./infrastructure/apps.repository"
 import { AuthModule } from '@app/auth';
+import { AppsService } from './infrastructure/apps.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
     SupabaseLibModule,
-    AuthModule
+    AuthModule,
   ],
-  controllers: [AppController],
+  controllers: [AppsController],
   providers: [
-    AppService,
     AppRepository,
-    { 
-      provide: "IAppsRepository", 
-      useExisting: AppRepository
-    }
+    AppsService
+    
   ],
 })
-export class AppModule {}
+export class AppsModule {}

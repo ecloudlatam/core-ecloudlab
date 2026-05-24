@@ -1,0 +1,17 @@
+import { Injectable } from '@nestjs/common';
+import { UsersRepository } from './infrastructure/users.repository';
+
+@Injectable()
+export class UsersService {
+
+    constructor(private readonly userReposity: UsersRepository ){}
+
+    async create(body: any): Promise<any>{
+        const data = await this.userReposity.create(body)
+        return {"status":data}
+    }
+
+    async findAll(): Promise<any>{
+        return this.userReposity.findall()
+    }
+}
