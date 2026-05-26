@@ -20,15 +20,12 @@ export class ChatsController {
   @HttpCode(HttpStatus.OK)
   async handleIncomingMessage(
     @Body() body: any,
-    @Req() request: any,
     @Param('appId') appId: string,
   ) {
 
     const botId = 12345678;
-    const phone = 987654;
-    const session = await this.sessionManagerService.getSession(appId, botId, phone)
+    const phone = 593983258685;
     const resp =  await this.whatsappService.messages(appId, botId, phone, body)
-    // Aquí procesaremos el JSON con tu servicio e IA
     return resp;
   }
 }

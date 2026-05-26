@@ -1,11 +1,18 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { createClient, RedisClientType } from "redis";
 
+
+interface ChatMessage {
+    botId: number,
+    phone: number,
+    history: any;
+}
 
 @Injectable()
 export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
 
-    private redisClient: RedisClientType
+    private redisClient: RedisClientType;
+    private readonly logger = new Logger(SessionManagerService.name)
 
     constructor() {
         this.redisClient = createClient({
@@ -23,23 +30,25 @@ export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
     }
 
     async getSession(appId: string, botId: number, phone: number) {
-        const key = `session:${appId}:${botId}:${phone}`
+        try {
+            const key = `session:${appId}:${botId}:${phone}`
+            const session = await this.redisClient.lRange(key, 0, -1);
+            return session.map((item: any) => JSON.parse(item))
+        } catch (error) {
+            console.log("error", error)
+        }
 
-        const res = await this.redisClient.get(key)
-        console.log(res);
-        return res
     }
 
-    async createSession(appId: string, botId: number, phone: number, newMessage: any) {
-        const key = `session:${appId}:${botId}:${phone}`
-
-        const res = await this.redisClient.set(key, JSON.stringify(newMessage), {
-            EX: 1800,
-        });
-
-        console.log(res);
-        return res
-
+    async createSession(appId: string, botId: number, phone: number, models: any) {
+        try {
+            const key = `session:${appId}:${botId}:${phone}`
+            const res = await this.redisClient.rPush(key, JSON.stringify(models));
+            await this.redisClient.expire(key, 100)
+            return res
+        } catch (error) {
+            throw new Error(error)
+        }
     }
 
 }

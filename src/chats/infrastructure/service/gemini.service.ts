@@ -2,6 +2,17 @@ import { Injectable, Logger } from "@nestjs/common";
 import { GoogleGenAI } from "@google/genai";
 import { AwsService } from "src/shared/aws-ssm.service";
 
+
+const addedProduct = {
+    name: 'addedProduct',
+    description: 'addedProduct',
+};
+
+const searchProduct = {
+    name: 'searchProduct',
+    description: 'searchProduct',
+}
+
 @Injectable()
 export class GeminiService {
 
@@ -9,24 +20,58 @@ export class GeminiService {
 
     constructor(private readonly awsService: AwsService) { }
 
-    async runAgentAI(message: any) {
+    private async executeTools(functionName: string) {
 
-        const { value } = message.entry[0].changes[0]
-        const messages = value.messages[0]
-        const text = messages.text.body
+        if (functionName === "searchProduct") {
+            return {
+                id: 1,
+                name: "arroz"
+            }
+        }
+        return { error: "tool not found" }
+    }
+
+    async runAgentAI(history: any, message: string) {
 
         try {
             const client = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY })
             const chatSession = client.chats.create({
                 model: "gemini-3.5-flash",
-                config: { systemInstruction: "Eres el asistente de La Tigresa." }
+                config: {
+                    systemInstruction: `
+                    Eres el asistente de cotización de productos de la tienda tigresa.
+                    Responde con mensajes cortos con emojis.
+                    `,
+                    tools: [{
+                        functionDeclarations: [addedProduct, searchProduct]
+                    }]
+                },
+                history
             });
+            let resp = await chatSession.sendMessage({ message });
+            const cantFunct = resp.functionCalls ?? []
+            if (cantFunct.length > 0) {
+                const data = cantFunct[0]
+                const { name } = data
+                const respTools = await this.executeTools(name)
 
-            const response1 = await chatSession.sendMessage({ message: "¡Hola! ¿Tienen leche?" });
+                resp = await chatSession.sendMessage({
+                    message: [
+                        {
+                            functionResponse: {
+                                name: name,
+                                response: respTools
+                            }
+                        }
+                    ]
+                });
+            }
 
-            const updatedHistory = chatSession.getHistory();
-
-            return { value: response1 }
+            return {
+                message: resp?.text,
+                role: resp.candidates[0].content.role,
+                responseId: resp?.responseId,
+            }
 
         } catch (error) {
             this.logger.error(error)
