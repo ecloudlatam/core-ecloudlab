@@ -25,7 +25,7 @@ export class ChatsController {
 
     const botId = 12345678;
     const phone = 593983258685;
-    const resp =  await this.whatsappService.messages(appId, botId, phone, body)
+    const resp =  await this.whatsappService.agentShop(appId, botId, phone, body)
     return resp;
   }
 }

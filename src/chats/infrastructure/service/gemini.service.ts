@@ -1,6 +1,6 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { GoogleGenAI } from "@google/genai";
-import { AwsService } from "src/shared/aws-ssm.service";
+import { AwsService } from "src/shared/aws.service";
 
 
 const addedProduct = {
@@ -14,11 +14,16 @@ const searchProduct = {
 }
 
 @Injectable()
-export class GeminiService {
+export class GeminiService implements OnModuleInit {
 
     protected readonly logger = new Logger(GeminiService.name)
+    private client: GoogleGenAI
 
     constructor(private readonly awsService: AwsService) { }
+
+    onModuleInit() {
+        this.client = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY })
+    }
 
     private async executeTools(functionName: string) {
 
@@ -31,16 +36,21 @@ export class GeminiService {
         return { error: "tool not found" }
     }
 
-    async runAgentAI(history: any, message: string) {
+    async runAgentAI(history: any, messageInput: any) {
 
         try {
-            const client = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY })
-            const chatSession = client.chats.create({
+            const chatSession = this.client.chats.create({
                 model: "gemini-3.5-flash",
                 config: {
                     systemInstruction: `
-                    Eres el asistente de cotización de productos de la tienda tigresa.
-                    Responde con mensajes cortos con emojis.
+                    Eres el asistente para la tienda de la señora paula, contienes las funcionalidades.
+                    Responde con mensajes cortos con emojis
+                    
+                    - Cancelar deuda: el aumento de credito se realiza de manera presencial y sin valores pendientes por pagar.
+                    - Buscar producto: indicar el nombre del producto.
+                    - Consultar deuda: el valor pendiente por pagar es de 50 dolares
+                    - Hablar con la dueña: llamar al numero: 593983258685
+                    .
                     `,
                     tools: [{
                         functionDeclarations: [addedProduct, searchProduct]
@@ -48,7 +58,12 @@ export class GeminiService {
                 },
                 history
             });
-            let resp = await chatSession.sendMessage({ message });
+            
+            console.time('time-agent-gemini');
+            let resp = await chatSession.sendMessage({ message: messageInput });
+            console.timeEnd('time-agent-gemini');
+
+
             const cantFunct = resp.functionCalls ?? []
             if (cantFunct.length > 0) {
                 const data = cantFunct[0]

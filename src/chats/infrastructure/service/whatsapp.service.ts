@@ -2,17 +2,21 @@ import { ForbiddenException, Injectable, Logger, Query } from "@nestjs/common";
 import { GeminiService } from "./gemini.service";
 import { VercelGatewayService } from "./vercel.service";
 import { SessionManagerService } from "./session-redis.service";
-import _ from 'lodash'
+import { pick, assign, omit } from "lodash"
+import { AwsService } from "src/shared/aws.service";
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class WhatsAppService {
     constructor(
         private readonly sessionManagerService: SessionManagerService,
         private readonly geminiService: GeminiService,
-        private readonly vercelGatewayService: VercelGatewayService
+        private readonly awsService: AwsService
     ) { }
 
     private readonly logger = new Logger(WhatsAppService.name)
+    private readonly baseUrl = `${process.env.WHATSAPP_BASE_URL}/v25.0/${process.env.WHATSAPP_BUSINESS_PHONE_NUMBER_ID}`
+
     webhook(query: any) {
 
         const mode = query['hub.mode']
@@ -29,16 +33,20 @@ export class WhatsAppService {
         throw new ForbiddenException('Token de verificación inválido');
     }
 
-    async messages(appId: string, botId: number, phone: number, body: any) {
+    async agentShop(appId: string, botId: number, phone: number, body: any) {
         try {
-            const message = this.formatedText(body)
+            const message = await this.formatedText(body)
 
             if (!message) return message
 
             const history = await this.sessionManagerService.getSession(appId, botId, phone)
-            console.log(history)
+            console.time('time-agent-shop');
 
             const models = await this.geminiService.runAgentAI(history, message.parts[0].text)
+            // const models = await this.geminiService.runAgentAI(history, "ok")
+
+
+            console.timeEnd('time-agent-shop');
             const modelPayload = {
                 role: "model",
                 parts: [{ text: models.message }]
@@ -55,23 +63,53 @@ export class WhatsAppService {
 
     }
 
-    formatedText(data: any) {
-        this.logger.log(data)
-        const { contacts, messages } = data.entry[0].changes[0].value
+    async formatedText(payload: any) {
+        const { messages } = payload.entry[0].changes[0].value
 
         if (!messages) return null
 
-        const text = messages[0].text.body
-
+        const { id, type } = pick(messages[0], ['from', "from_user_id", "id", "timestamp", "text", "type"])
+        this.typingIndicator(id)
+        const data = await this.typeMessage(type, messages)
+        console.log(data);
+        
         return {
             role: "user",
-            parts: [{ text }]
+            parts: [{ text: data.text.body }]
+
         }
+    }
+
+
+    async typeMessage(key: string, message: any) {
+        this.logger.log(key)
+
+        switch (key) {
+            case "audio":
+                return this.downloadWhatsAppAudio(message)
+            case "text":
+                return message[0]
+            default:
+                break;
+        }
+    }
+
+    async typingIndicator(messageId: string) {
+        const body = {
+            "messaging_product": "whatsapp",
+            "status": "read",
+            "message_id": messageId,
+            "typing_indicator": {
+                "type": "text"
+            }
+        }
+        this.apiPost("messages", body)
+
     }
 
     async sendMessages(message: string, userId: number) {
 
-        const data = {
+        const body = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
             "to": userId,
@@ -80,14 +118,108 @@ export class WhatsAppService {
                 "body": message
             }
         }
-        const resp = await fetch(`https://graph.facebook.com/v25.0/${process.env.WHATSAPP_BUSINESS_PHONE_NUMBER_ID}/messages`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${process.env.TOKEN_MESSAGE}`,
-            },
-            body: JSON.stringify(data)
-        })
-        this.logger.log(resp)
+        this.apiPost("messages", body)
+
+    }
+
+    private async apiPost(endpoint: string, body: any) {
+        try {
+            const resp = await fetch(`${this.baseUrl}/${endpoint}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.WHATSAPP_TOKEN_MESSAGE}`,
+                },
+                body: JSON.stringify(body)
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                this.logger.error(`[WhatsApp API Error] Endpoint: ${endpoint} | Error: ${JSON.stringify(data)}`);
+                return null;
+            }
+            this.logger.log(`[WhatsApp API Success] Endpoint: ${JSON.stringify(data)}`);
+            return data;
+        } catch (error) {
+            this.logger.error(`[Fetch Network Error] ${error.message}`);
+            return null;
+        }
+    }
+
+    private async apiGetAudio(id: string) {
+
+        try {
+            const resp = await fetch(`${process.env.WHATSAPP_BASE_URL}/v25.0/${id}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.WHATSAPP_TOKEN_MESSAGE}`,
+                },
+            });
+            const { url } = await resp.json();
+
+            const responseFile = await fetch(url, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${process.env.WHATSAPP_TOKEN_MESSAGE}`,
+                }
+            });
+
+            const arrayBuffer = await responseFile.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            return buffer
+        } catch (error) {
+            console.log(error);
+        }
+
+    }
+
+    async transcribeAudioBuffer(audioBuffer: Buffer): Promise<string | null> {
+        try {
+            // 1. Creamos la instancia de FormData nativa de Node.js
+            const formData = new FormData();
+
+            // 2. Convertimos el Buffer a un Blob para que el FormData lo maneje correctamente
+            const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/mp3' });
+            // 3. Adjuntamos los parámetros exactamente igual a tu captura de Postman
+            formData.append('model_id', 'scribe_v2');
+
+            // Importante: El tercer parámetro 'audio_cliente.mp3' le dice a la API que es un archivo
+            formData.append('file', audioBlob, 'audio_cliente.mp3');
+
+            // 4. Realizamos la petición POST
+            const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+                method: 'POST',
+                headers: {
+                    // ⚠️ NOTA: NO agregues 'Content-Type': 'multipart/form-data' manualmente.
+                    // Al pasarle el objeto FormData, fetch calcula el boundary automáticamente.
+                    'xi-api-key': process.env.ELEVENLABS_API_KEY,
+                },
+                body: formData, // Pasamos el formData con el buffer dentro
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                this.logger.error(`Error en ElevenLabs STT: ${JSON.stringify(errorData)}`);
+                return null;
+            }
+
+            const data = await response.json();
+            return data.text; // Retorna el texto ya transcribido 🎉
+
+        } catch (error) {
+            this.logger.error(`Error procesando el buffer en ElevenLabs: ${error.message}`);
+            return null;
+        }
+    }
+
+    private async downloadWhatsAppAudio(message: any) {
+        const data = message[0]
+        const buffer = await this.apiGetAudio(data.audio.id)
+        const transcribeAudio = await this.transcribeAudioBuffer(buffer)
+        console.log(transcribeAudio);
+        
+        // const now = dayjs().format('DD-MM-YYYY HH:mm')
+        // await this.awsService.uploadToSupabaseS3(buffer, `audio${now}.mp3`)
+        return assign(omit(data, ['audio']), {text: {body: transcribeAudio}})
     }
 }
