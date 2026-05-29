@@ -40,13 +40,13 @@ export class WhatsAppService {
             if (!message) return message
 
             const history = await this.sessionManagerService.getSession(appId, botId, phone)
-            console.time('time-agent-shop');
+
+            // await this.geminiService.agentRouter(history, message.parts[0].text)
 
             const models = await this.geminiService.runAgentAI(history, message.parts[0].text)
-            // const models = await this.geminiService.runAgentAI(history, "ok")
 
+            console.log(models)
 
-            console.timeEnd('time-agent-shop');
             const modelPayload = {
                 role: "model",
                 parts: [{ text: models.message }]
@@ -71,8 +71,6 @@ export class WhatsAppService {
         const { id, type } = pick(messages[0], ['from', "from_user_id", "id", "timestamp", "text", "type"])
         this.typingIndicator(id)
         const data = await this.typeMessage(type, messages)
-        console.log(data);
-        
         return {
             role: "user",
             parts: [{ text: data.text.body }]
@@ -82,7 +80,6 @@ export class WhatsAppService {
 
 
     async typeMessage(key: string, message: any) {
-        this.logger.log(key)
 
         switch (key) {
             case "audio":
@@ -137,7 +134,6 @@ export class WhatsAppService {
                 this.logger.error(`[WhatsApp API Error] Endpoint: ${endpoint} | Error: ${JSON.stringify(data)}`);
                 return null;
             }
-            this.logger.log(`[WhatsApp API Success] Endpoint: ${JSON.stringify(data)}`);
             return data;
         } catch (error) {
             this.logger.error(`[Fetch Network Error] ${error.message}`);
@@ -175,26 +171,20 @@ export class WhatsAppService {
 
     async transcribeAudioBuffer(audioBuffer: Buffer): Promise<string | null> {
         try {
-            // 1. Creamos la instancia de FormData nativa de Node.js
             const formData = new FormData();
 
-            // 2. Convertimos el Buffer a un Blob para que el FormData lo maneje correctamente
             const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/mp3' });
-            // 3. Adjuntamos los parámetros exactamente igual a tu captura de Postman
             formData.append('model_id', 'scribe_v2');
 
-            // Importante: El tercer parámetro 'audio_cliente.mp3' le dice a la API que es un archivo
             formData.append('file', audioBlob, 'audio_cliente.mp3');
 
             // 4. Realizamos la petición POST
             const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
                 method: 'POST',
                 headers: {
-                    // ⚠️ NOTA: NO agregues 'Content-Type': 'multipart/form-data' manualmente.
-                    // Al pasarle el objeto FormData, fetch calcula el boundary automáticamente.
                     'xi-api-key': process.env.ELEVENLABS_API_KEY,
                 },
-                body: formData, // Pasamos el formData con el buffer dentro
+                body: formData, 
             });
 
             if (!response.ok) {
@@ -204,7 +194,7 @@ export class WhatsAppService {
             }
 
             const data = await response.json();
-            return data.text; // Retorna el texto ya transcribido 🎉
+            return data.text; 
 
         } catch (error) {
             this.logger.error(`Error procesando el buffer en ElevenLabs: ${error.message}`);
@@ -216,10 +206,6 @@ export class WhatsAppService {
         const data = message[0]
         const buffer = await this.apiGetAudio(data.audio.id)
         const transcribeAudio = await this.transcribeAudioBuffer(buffer)
-        console.log(transcribeAudio);
-        
-        // const now = dayjs().format('DD-MM-YYYY HH:mm')
-        // await this.awsService.uploadToSupabaseS3(buffer, `audio${now}.mp3`)
         return assign(omit(data, ['audio']), {text: {body: transcribeAudio}})
     }
 }
