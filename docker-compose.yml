@@ -1,0 +1,23 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: ${NODE_ENV:-production}
+    ports:
+      - "3600:3600"
+    # volumes:
+      # - .:/app
+    environment:
+      - PORT=3600
+    networks:
+      - ecloudlab
+    env_file:
+      - .env
+
+networks: 
+    ecloudlab:
+        name:
+            ecloudlab

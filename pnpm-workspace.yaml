@@ -1,4 +1,4 @@
 allowBuilds:
-  '@google/genai': false
-  '@nestjs/core': false
-  protobufjs: false
+  "@google/genai": true
+  "@nestjs/core": true
+  protobufjs: true
