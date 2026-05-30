@@ -1,43 +1,12 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { GoogleGenAI, Type } from "@google/genai";
 import { AwsService } from "src/shared/aws.service";
+import { routerTool, ToolService } from "../tools/parameters.service";
 import * as dayjs from 'dayjs';
+import { DoubtService } from "src/doubt/infraestructure/doubt.service";
+import { FunctionService } from "../tools/functions.service";
 
 
-const endfunction = {
-    name: "close-chat",
-    description: "Cierra de conversación",
-    parameters: {
-        type: Type.OBJECT,
-        properties: {
-            close: {
-                type: Type.OBJECT,
-                description: "valor generado por el agente."
-            }
-        },
-        required: ["close"]
-    }
-}
-
-
-const addedDoubt = {
-    name: "added-new-doubt",
-    description: "agregar una nueva deuda",
-    parameters: {
-        type: Type.OBJECT,
-        properties: {
-            date: {
-                type: Type.STRING,
-                description: 'Date of the meeting (e.g., "2024-07-29")',
-            },
-            product: {
-                type: Type.STRING,
-                description: "product's name (e.g., 'pollo de 1/4 libra')"
-            }
-        },
-        required: ['date', 'product']
-    }
-}
 
 @Injectable()
 export class GeminiService implements OnModuleInit {
@@ -45,139 +14,149 @@ export class GeminiService implements OnModuleInit {
     protected readonly logger = new Logger(GeminiService.name)
     private client: GoogleGenAI
 
-    constructor(private readonly awsService: AwsService) { }
+    constructor(private readonly awsService: AwsService,
+        private readonly tools: ToolService,
+        private readonly doubtService: DoubtService,
+        private readonly functions: FunctionService
+    ) { }
 
     onModuleInit() {
         this.client = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY })
     }
 
-    private async executeTools(functionName: string, args: Record<string, any>) {
-
-        if (functionName === "searchProduct") {
-
-            console.log(functionName);
-
-            return {
-                id: 1,
-                name: "arroz"
-            }
-        }
-
-        if (functionName === "added-new-doubt") {
-            const { date } = args
-
-            return {
-                id: 1,
-                name: "registrado"
-            }
-        }
-        return { error: "tool not found" }
-    }
-
-
-    async agentRouter(history: any, messageInput: any) {
+    // ============================================
+    // 🎯 AGENTE ROUTER - Identifica la intención
+    // ============================================
+    async agentRouter(history: any, messageInput: string) {
         try {
-            const chatSession = await this.client.chats.create({
+            this.logger.log('🔍 Router: Analizando intención del usuario...',messageInput);
+
+            const routerSession = this.client.chats.create({
                 model: "gemini-3.5-flash",
                 config: {
                     systemInstruction: `
-                Interpreta la intención del usuario de forma libre.
-                Al finalizar el análisis o cuando el usuario solicite una acción (como registrar deudas, despedirse, etc.), 
-                debes ejecutar INMEDIATAMENTE la herramienta [close-chat].
-                
-                Debes construir un objeto JSON dinámico con la información que el usuario quiere procesar. 
-                Tú decides las llaves y los valores de este JSON según el contexto de la conversación.
-                
-                Ejemplos de lo que puedes meter en el JSON de 'metadata':
-                - Si es deuda cliente: {"action": "register"}
-                - Si es proveedor: {"tipo": "proveedor"}
-                - Si se despide: {"status": "close"}
-                `,
-                    tools: [
-                        {
-                            functionDeclarations: [
-                                endfunction
-                            ]
-                        }
-                    ]
+                    Eres un agente router inteligente para la tienda de la señora Paula.
+                    Tu ÚNICA tarea es identificar la intención del usuario y extraer datos relevantes.
+                    
+                    Intenciones posibles:
+                    - register_debt: Usuario quiere registrar/anotar/guardar una deuda
+                    - search_product: Usuario pregunta por un producto o precio
+                    - check_debt: Usuario quiere saber cuánto debe
+                    - contact_owner: Usuario quiere hablar con la dueña
+                    - general_chat: Conversación general, saludos, despedidas
+                    - close_conversation: Usuario se despide o termina la conversación
+                    
+                    Extrae datos como: productos, fechas, cantidades, montos.
+                    Usa la herramienta [route-intent] SIEMPRE para responder.
+                    `,
+                    tools: [{
+                        functionDeclarations: [routerTool]
+                    }]
                 },
-                history
-            }).sendMessage({
-                message: messageInput,
-
+                history 
             });
 
-            const intent = chatSession.functionCalls
-            if(intent.length > 0) return await this.runAgentAI(history, intent[0].args)
-               return  await this.runAgentAI(history,messageInput)
+            const response = await routerSession.sendMessage({ message: messageInput});
 
+            const functionCalls = response.functionCalls ?? [];
+            if (functionCalls.length === 0) {
+                // Fallback si no usa la herramienta
+                return {
+                    intent: 'general_chat',
+                    confidence: 0.5,
+                    extractedData: {}
+                };
+            }
+
+            const routeResult = functionCalls[0].args;
+            return routeResult;
 
         } catch (error) {
-
+            this.logger.error(`❌ Error en agentRouter: ${error.message}`);
+            return {
+                intent: 'general_chat',
+                confidence: 0.3,
+                extractedData: {}
+            };
         }
     }
 
-
-    async runAgentAI(history: any, messageInput: any) {
-
-        console.log(messageInput)
-
+    // ============================================
+    // AGENTE EJECUTOR - Maneja la acción
+    // ============================================
+    async runAgentAI(history: any, messageInput: string, appId: string, userId: number,routeInfo?: any) {
         try {
+
             const day = dayjs().format('YYYY-MM-DD');
+
+
+            // Determinar qué herramientas están disponibles según la intención
+            const availableTools = this.tools.getToolsForIntent(routeInfo?.intent);
+
             const chatSession = this.client.chats.create({
                 model: "gemini-3.5-flash",
                 config: {
                     systemInstruction: `
-                    Eres el asistente para la tienda de la señora paula, contienes las funcionalidades.
-                    Responde con mensajes cortos con emojis
+                    Eres el asistente de la tienda de la señora Paula. 
+                    Responde con mensajes cortos y amigables con emojis 😊
                     
-                    - 1. Hablar con la dueña: llamar al numero: 593983258685
-                    - 2. Buscar producto: indicar el nombre del producto.
-                    - 3. Consultar deuda: el valor pendiente por pagar es de 50 dolares
-                    - 4. Registrar nueva deuda: Cuando el usuario indique que quiere registrar o guardar una nueva deuda, 
-                    indicale la fecha de registrar es de hoy ${day} o de otro dia procesa la solicitud utilizando 
-                    la herramienta [added-new-doubt] valores de entrada {data:[fecha ingresada por el usuario yyyy-mm-dd]}
+                    Fecha actual: ${day}
+                    
+                    Funcionalidades disponibles:
+                    - 📞 Contactar a la dueña: 593983258685
+                    - 🔍 Buscar productos en inventario
+                    - 💰 Consultar deudas pendientes
+                    - 📝 Registrar nuevas deudas
+                    
+                    ${routeInfo?.extractedData ? `Datos extraídos: ${JSON.stringify(routeInfo.extractedData)}` : ''}
+                    
+                    Usa las herramientas disponibles cuando sea necesario.
+                    Sé conciso y directo en tus respuestas.
                     `,
                     tools: [{
-                        functionDeclarations: [
-                            addedDoubt,
-                            endfunction
-                        ]
+                        functionDeclarations: availableTools
                     }]
                 },
                 history
             });
 
-            let resp = await chatSession.sendMessage({ message: JSON.stringify(messageInput) });
+            // Primera llamada: enviar mensaje del usuario
+            let resp = await chatSession.sendMessage({ message: messageInput });
+
+            // Si hay function calls, ejecutarlas
+            const functionCalls = resp.functionCalls ?? [];
+            if (functionCalls.length > 0) {
+                const { name, args } = functionCalls[0];
+                const toolResponse = await this.functions.executeTools(name, args, appId, userId);
 
 
-            const cantFunct = resp.functionCalls ?? []
-            if (cantFunct.length > 0) {
-                const data = cantFunct[0]
-                const { name, args } = data
-                console.log(name)
-                const respTools = await this.executeTools(name, args)
-
+                // Segunda llamada: enviar resultado de la herramienta
                 resp = await chatSession.sendMessage({
                     message: [
                         {
                             functionResponse: {
                                 name: name,
-                                response: respTools
+                                response: toolResponse
                             }
                         }
                     ]
                 });
             }
-
             return {
                 message: resp?.text,
                 role: resp.candidates[0].content.role,
                 responseId: resp?.responseId,
-            }
+                intent: routeInfo?.intent,
+                toolsUsed: functionCalls.map(fc => fc.name)
+            };
 
         } catch (error) {
-            this.logger.error(error)
+            // this.logger.error(`❌ Error en runAgentAI: ${error.message}`);
+            throw error;
         }
     }
+
+
+
+  
 }

@@ -1,0 +1,30 @@
+services:
+  app:
+    container_name: app-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+    ports:
+      - "3600:3600"
+    environment:
+      - PORT=3600
+      - NODE_ENV=production
+    networks:
+      - ecloudlab
+    env_file:
+      - .env
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+networks: 
+  ecloudlab:
+    name: ecloudlab

@@ -44,7 +44,7 @@ export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
         try {
             const key = `session:${appId}:${botId}:${phone}`
             const res = await this.redisClient.rPush(key, JSON.stringify(models));
-            await this.redisClient.expire(key, 100)
+            await this.redisClient.expire(key, 1000)
             return res
         } catch (error) {
             throw new Error(error)

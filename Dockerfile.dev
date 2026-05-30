@@ -1,0 +1,17 @@
+# ✅ Dockerfile optimizado para DESARROLLO
+FROM node:24-alpine
+
+# Habilitar pnpm
+RUN corepack enable
+
+WORKDIR /app
+
+COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN pnpm install
+
+COPY . .
+
+EXPOSE 3600
+
+CMD ["pnpm", "run", "start:dev"]

@@ -3,19 +3,28 @@ services:
     container_name: app
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ${DOCKERFILE:-Dockerfile.dev}
       args:
-        NODE_ENV: ${NODE_ENV:-production}
+        NODE_ENV: ${NODE_ENV:-development}
     ports:
       - "3600:3600"
-    # volumes:
-      # - .:/app
+    volumes:
+      - .:/app
+      # ✅ Evita sobrescribir node_modules del contenedor
+      - /app/node_modules
+      # ✅ Evita sobrescribir dist del contenedor
+      - /app/dist
     environment:
       - PORT=3600
+      - NODE_ENV=${NODE_ENV:-development}
     networks:
       - ecloudlab
     env_file:
       - .env
+    # ✅ Reinicia automáticamente si el proceso falla
+    restart: unless-stopped
+    # ✅ Comando para desarrollo con watch mode
+    command: pnpm run start:dev
 
 networks: 
     ecloudlab:

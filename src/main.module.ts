@@ -5,6 +5,7 @@ import { UserModule } from "./users/user.module";
 import { ProductsModules } from "./products/products.module";
 import { CategoriesModule } from "./categories/categories.module";
 import { ChatsModule } from "./chats/chat.module";
+import { DoubtModule } from "./doubt/doubt.module";
 
 
 @Module({
@@ -14,6 +15,7 @@ import { ChatsModule } from "./chats/chat.module";
         ChatsModule,
         ProductsModules,
         CategoriesModule,
+        DoubtModule,
         RouterModule.register([
             {
                 path: "apps",
@@ -26,6 +28,10 @@ import { ChatsModule } from "./chats/chat.module";
              {
                 path: "chats",
                 module: ChatsModule
+            },
+            {
+                path: "doubts",
+                module: DoubtModule
             },
             {
                 path: "products",

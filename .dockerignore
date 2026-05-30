@@ -1,0 +1,53 @@
+# ✅ Archivos que NO deben copiarse al contenedor Docker
+# Esto acelera el build y reduce el tamaño de la imagen
+
+# Dependencias (se instalan dentro del contenedor)
+node_modules
+npm-debug.log
+pnpm-debug.log
+yarn-error.log
+
+# Build output
+dist
+build
+.next
+
+# Tests
+coverage
+*.test.ts
+*.spec.ts
+test
+
+# Git
+.git
+.gitignore
+.github
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Environment
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+README.md
+.prettierrc
+.eslintrc.js

@@ -3,15 +3,12 @@ import { GeminiService } from "./gemini.service";
 import { VercelGatewayService } from "./vercel.service";
 import { SessionManagerService } from "./session-redis.service";
 import { pick, assign, omit } from "lodash"
-import { AwsService } from "src/shared/aws.service";
-import * as dayjs from 'dayjs';
 
 @Injectable()
 export class WhatsAppService {
     constructor(
         private readonly sessionManagerService: SessionManagerService,
         private readonly geminiService: GeminiService,
-        private readonly awsService: AwsService
     ) { }
 
     private readonly logger = new Logger(WhatsAppService.name)
@@ -41,23 +38,37 @@ export class WhatsAppService {
 
             const history = await this.sessionManagerService.getSession(appId, botId, phone)
 
-            // await this.geminiService.agentRouter(history, message.parts[0].text)
+            // 🎯 PASO 1: Router identifica la intención
+            const routeInfo = await this.geminiService.agentRouter(history, message.parts[0].text)
 
-            const models = await this.geminiService.runAgentAI(history, message.parts[0].text)
 
-            console.log(models)
+            // 🤖 PASO 2: Ejecutor maneja la acción con contexto de la intención
+            const models = await this.geminiService.runAgentAI(
+                history, 
+                message.parts[0].text,
+                appId,
+                phone,
+                routeInfo,
+               
+            )
 
             const modelPayload = {
                 role: "model",
                 parts: [{ text: models.message }]
             };
+            
             await Promise.all([
                 this.sessionManagerService.createSession(appId, botId, phone, message),
                 this.sessionManagerService.createSession(appId, botId, phone, modelPayload),
                 this.sendMessages(models.message, phone)
             ]);
-            return models
+            
+            return {
+                ...models,
+                routeInfo // Incluir info de routing para debugging
+            };
         } catch (error) {
+            // this.logger.error(`Error en agentShop: ${error.message}`)
             throw new Error(error)
         }
 
