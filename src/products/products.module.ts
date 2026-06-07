@@ -17,7 +17,7 @@ import { ProductsService } from "./infrastructure/products.service";
         ProductsService
     ],
     controllers:[ProductsControllers],
-    exports:[]
+    exports:[ProductsService]
 })
 
 export class ProductsModules { }

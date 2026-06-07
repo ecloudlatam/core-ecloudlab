@@ -1,0 +1,28 @@
+import { Injectable } from "@nestjs/common";
+import {SupabaseService} from '@app/supabase'
+
+@Injectable()
+export class MessageRepository {
+
+    constructor(private readonly supabaseService: SupabaseService ){}
+
+    async findall(): Promise<any> {
+        try {
+            const supabase = this.supabaseService.getClient()
+            const data = await supabase.from("users").select("*")
+            return data 
+        } catch (error) {
+            
+        }
+    }
+
+    async create(body: any){
+        try {
+            const supabase = this.supabaseService.getClient()
+            const data = await supabase.from("messages_status").insert([body]).select()
+            return data
+        } catch (error) {
+            
+        }
+    }
+} 

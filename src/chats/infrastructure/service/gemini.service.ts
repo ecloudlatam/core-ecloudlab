@@ -1,23 +1,25 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { GoogleGenAI, Type } from "@google/genai";
 import { AwsService } from "src/shared/aws.service";
-import { routerTool, ToolService } from "../tools/parameters.service";
+import { routerTool, ToolService } from "../../../agents/tools/parameters.service";
 import * as dayjs from 'dayjs';
-import { DoubtService } from "src/doubt/infraestructure/doubt.service";
-import { FunctionService } from "../tools/functions.service";
+import { FunctionService } from "../../../agents/tools/functions.service";
+import { PromptTemplate } from "@langchain/core/prompts"
+import { AgentService } from "src/agents/infrastructure/agent.service";
 
 
 
 @Injectable()
 export class GeminiService implements OnModuleInit {
 
+
     protected readonly logger = new Logger(GeminiService.name)
     private client: GoogleGenAI
 
     constructor(private readonly awsService: AwsService,
         private readonly tools: ToolService,
-        private readonly doubtService: DoubtService,
-        private readonly functions: FunctionService
+        private readonly functions: FunctionService,
+        private readonly agentService: AgentService
     ) { }
 
     onModuleInit() {
@@ -25,38 +27,29 @@ export class GeminiService implements OnModuleInit {
     }
 
     // ============================================
-    // 🎯 AGENTE ROUTER - Identifica la intención
+    // AGENTE ROUTER - Identifica la intención
     // ============================================
-    async agentRouter(history: any, messageInput: string) {
+    async agentRouter(history: any, messageInput: any) {
         try {
-            this.logger.log('🔍 Router: Analizando intención del usuario...',messageInput);
+            const { model, prompt } = await this.agentService.findOne("router_intent")
 
+            const promptTemplate = PromptTemplate.fromTemplate(prompt)
+
+            const systemInstruction = await promptTemplate.format({
+                name: "paula"
+            })
             const routerSession = this.client.chats.create({
-                model: "gemini-3.5-flash",
+                model,
                 config: {
-                    systemInstruction: `
-                    Eres un agente router inteligente para la tienda de la señora Paula.
-                    Tu ÚNICA tarea es identificar la intención del usuario y extraer datos relevantes.
-                    
-                    Intenciones posibles:
-                    - register_debt: Usuario quiere registrar/anotar/guardar una deuda
-                    - search_product: Usuario pregunta por un producto o precio
-                    - check_debt: Usuario quiere saber cuánto debe
-                    - contact_owner: Usuario quiere hablar con la dueña
-                    - general_chat: Conversación general, saludos, despedidas
-                    - close_conversation: Usuario se despide o termina la conversación
-                    
-                    Extrae datos como: productos, fechas, cantidades, montos.
-                    Usa la herramienta [route-intent] SIEMPRE para responder.
-                    `,
+                    systemInstruction,
                     tools: [{
                         functionDeclarations: [routerTool]
                     }]
                 },
-                history 
+                history
             });
 
-            const response = await routerSession.sendMessage({ message: messageInput});
+            const response = await routerSession.sendMessage({ message: messageInput });
 
             const functionCalls = response.functionCalls ?? [];
             if (functionCalls.length === 0) {
@@ -69,10 +62,10 @@ export class GeminiService implements OnModuleInit {
             }
 
             const routeResult = functionCalls[0].args;
+
             return routeResult;
 
         } catch (error) {
-            this.logger.error(`❌ Error en agentRouter: ${error.message}`);
             return {
                 intent: 'general_chat',
                 confidence: 0.3,
@@ -84,35 +77,26 @@ export class GeminiService implements OnModuleInit {
     // ============================================
     // AGENTE EJECUTOR - Maneja la acción
     // ============================================
-    async runAgentAI(history: any, messageInput: string, appId: string, userId: number,routeInfo?: any) {
+    async agentPrincipal(history: any, messageInput: any, appId: string, userId: number, routeInfo?: any) {
         try {
-
             const day = dayjs().format('YYYY-MM-DD');
-
-
             // Determinar qué herramientas están disponibles según la intención
             const availableTools = this.tools.getToolsForIntent(routeInfo?.intent);
 
+            const { model, prompt } = await this.agentService.findOne("agent_ecommerce")
+
+            const promptTemplate = PromptTemplate.fromTemplate(prompt)
+
+            const systemInstruction = await promptTemplate.format({
+                name: "paula",
+                day,
+                extractedData: routeInfo?.extractedData ? `${JSON.stringify(routeInfo.extractedData)}` : ''
+            })
+
             const chatSession = this.client.chats.create({
-                model: "gemini-3.5-flash",
+                model,
                 config: {
-                    systemInstruction: `
-                    Eres el asistente de la tienda de la señora Paula. 
-                    Responde con mensajes cortos y amigables con emojis 😊
-                    
-                    Fecha actual: ${day}
-                    
-                    Funcionalidades disponibles:
-                    - 📞 Contactar a la dueña: 593983258685
-                    - 🔍 Buscar productos en inventario
-                    - 💰 Consultar deudas pendientes
-                    - 📝 Registrar nuevas deudas
-                    
-                    ${routeInfo?.extractedData ? `Datos extraídos: ${JSON.stringify(routeInfo.extractedData)}` : ''}
-                    
-                    Usa las herramientas disponibles cuando sea necesario.
-                    Sé conciso y directo en tus respuestas.
-                    `,
+                    systemInstruction,
                     tools: [{
                         functionDeclarations: availableTools
                     }]
@@ -121,14 +105,18 @@ export class GeminiService implements OnModuleInit {
             });
 
             // Primera llamada: enviar mensaje del usuario
-            let resp = await chatSession.sendMessage({ message: messageInput });
-
+            let resp = await chatSession.sendMessage({
+                message: messageInput
+            });
             // Si hay function calls, ejecutarlas
             const functionCalls = resp.functionCalls ?? [];
             if (functionCalls.length > 0) {
                 const { name, args } = functionCalls[0];
+                console.log("name", name)
                 const toolResponse = await this.functions.executeTools(name, args, appId, userId);
 
+                console.log("toolResponse=====",toolResponse);
+                
 
                 // Segunda llamada: enviar resultado de la herramienta
                 resp = await chatSession.sendMessage({
@@ -142,8 +130,12 @@ export class GeminiService implements OnModuleInit {
                     ]
                 });
             }
+
+            // Extraer el mensaje de respuesta y asegurar que no esté vacío
+            const responseMessage = resp?.text ?? resp?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+            
             return {
-                message: resp?.text,
+                message: responseMessage.trim() || "Operación completada exitosamente", 
                 role: resp.candidates[0].content.role,
                 responseId: resp?.responseId,
                 intent: routeInfo?.intent,
@@ -158,5 +150,5 @@ export class GeminiService implements OnModuleInit {
 
 
 
-  
+
 }

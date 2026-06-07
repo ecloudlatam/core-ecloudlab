@@ -1,14 +1,19 @@
 import { ForbiddenException, Injectable, Logger, Query } from "@nestjs/common";
 import { GeminiService } from "./gemini.service";
-import { VercelGatewayService } from "./vercel.service";
 import { SessionManagerService } from "./session-redis.service";
-import { pick, assign, omit } from "lodash"
+import { pick, assign, omit, get } from "lodash"
+import { MessageService } from "src/messages/infrastructure/messages.service";
+import { AwsService } from "src/shared/aws.service";
+import { MetaService } from "../meta/meta.service";
 
 @Injectable()
 export class WhatsAppService {
     constructor(
         private readonly sessionManagerService: SessionManagerService,
         private readonly geminiService: GeminiService,
+        private readonly messageService: MessageService,
+        private readonly metaService: MetaService,
+        private readonly awsService: AwsService
     ) { }
 
     private readonly logger = new Logger(WhatsAppService.name)
@@ -30,43 +35,45 @@ export class WhatsAppService {
         throw new ForbiddenException('Token de verificación inválido');
     }
 
-    async agentShop(appId: string, botId: number, phone: number, body: any) {
+    async events(appId: string, botId: number, phone: number, body: any) {
+
+        const value = body.entry[0].changes[0].value
+
+        let payload = { bot_id: botId, reference_id: phone, status: "api", response: value }
+        if (value.statuses) {
+            const { statuses } = value
+
+            const unixSeconds = parseInt(statuses[0].timestamp, 10);
+            const dateObject = new Date(unixSeconds * 1000);
+
+            const supabaseTimestamp = dateObject.toISOString();
+            payload = assign(payload, { wam_id: statuses[0].id, status: statuses[0].status, timestamp: supabaseTimestamp })
+        }
+
+        await this.messageService.create(payload, appId)
+    }
+
+    async menuprincipal(appId: string, botId: number, phone: number, body: any) {
         try {
+
             const message = await this.formatedText(body)
 
             if (!message) return message
+            console.log("message", message)
 
             const history = await this.sessionManagerService.getSession(appId, botId, phone)
-
-            // 🎯 PASO 1: Router identifica la intención
-            const routeInfo = await this.geminiService.agentRouter(history, message.parts[0].text)
+            console.log("history", history.length)
 
 
-            // 🤖 PASO 2: Ejecutor maneja la acción con contexto de la intención
-            const models = await this.geminiService.runAgentAI(
-                history, 
-                message.parts[0].text,
-                appId,
-                phone,
-                routeInfo,
-               
-            )
+            if (message.type == "interactive") {
+                return await this.main(message, appId, phone, botId, history)
+            }
 
-            const modelPayload = {
-                role: "model",
-                parts: [{ text: models.message }]
-            };
-            
-            await Promise.all([
-                this.sessionManagerService.createSession(appId, botId, phone, message),
-                this.sessionManagerService.createSession(appId, botId, phone, modelPayload),
-                this.sendMessages(models.message, phone)
-            ]);
-            
-            return {
-                ...models,
-                routeInfo // Incluir info de routing para debugging
-            };
+            if (history.length <= 0) {
+                return await this.metaService.menu(phone)
+            }
+
+            return await this.main(message, appId, phone, botId, history)
         } catch (error) {
             // this.logger.error(`Error en agentShop: ${error.message}`)
             throw new Error(error)
@@ -75,109 +82,34 @@ export class WhatsAppService {
     }
 
     async formatedText(payload: any) {
-        const { messages } = payload.entry[0].changes[0].value
+        const { messages, statuses = [] } = payload.entry[0].changes[0].value
 
         if (!messages) return null
-
-        const { id, type } = pick(messages[0], ['from', "from_user_id", "id", "timestamp", "text", "type"])
-        this.typingIndicator(id)
-        const data = await this.typeMessage(type, messages)
-        return {
-            role: "user",
-            parts: [{ text: data.text.body }]
-
-        }
+        const { id, type } = messages[0]
+        this.metaService.typingIndicator(id)
+        const parts = await this.typeMessage(type, messages)
+        return { type, parts, role: "user" }
     }
 
 
     async typeMessage(key: string, message: any) {
 
+        console.log("key", key);
         switch (key) {
             case "audio":
                 return this.downloadWhatsAppAudio(message)
             case "text":
-                return message[0]
+                const { text } = message[0]
+                return [{ text: text.body }]
+
+            case "interactive":
+                return this.interactive(message)
+
+            case "image":
+                return this.metaService.apiGetImg(message)
             default:
                 break;
         }
-    }
-
-    async typingIndicator(messageId: string) {
-        const body = {
-            "messaging_product": "whatsapp",
-            "status": "read",
-            "message_id": messageId,
-            "typing_indicator": {
-                "type": "text"
-            }
-        }
-        this.apiPost("messages", body)
-
-    }
-
-    async sendMessages(message: string, userId: number) {
-
-        const body = {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
-            "to": userId,
-            "type": "text",
-            "text": {
-                "body": message
-            }
-        }
-        this.apiPost("messages", body)
-
-    }
-
-    private async apiPost(endpoint: string, body: any) {
-        try {
-            const resp = await fetch(`${this.baseUrl}/${endpoint}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${process.env.WHATSAPP_TOKEN_MESSAGE}`,
-                },
-                body: JSON.stringify(body)
-            });
-            const data = await resp.json();
-            if (!resp.ok) {
-                this.logger.error(`[WhatsApp API Error] Endpoint: ${endpoint} | Error: ${JSON.stringify(data)}`);
-                return null;
-            }
-            return data;
-        } catch (error) {
-            this.logger.error(`[Fetch Network Error] ${error.message}`);
-            return null;
-        }
-    }
-
-    private async apiGetAudio(id: string) {
-
-        try {
-            const resp = await fetch(`${process.env.WHATSAPP_BASE_URL}/v25.0/${id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${process.env.WHATSAPP_TOKEN_MESSAGE}`,
-                },
-            });
-            const { url } = await resp.json();
-
-            const responseFile = await fetch(url, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${process.env.WHATSAPP_TOKEN_MESSAGE}`,
-                }
-            });
-
-            const arrayBuffer = await responseFile.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            return buffer
-        } catch (error) {
-            console.log(error);
-        }
-
     }
 
     async transcribeAudioBuffer(audioBuffer: Buffer): Promise<string | null> {
@@ -195,7 +127,7 @@ export class WhatsAppService {
                 headers: {
                     'xi-api-key': process.env.ELEVENLABS_API_KEY,
                 },
-                body: formData, 
+                body: formData,
             });
 
             if (!response.ok) {
@@ -205,7 +137,7 @@ export class WhatsAppService {
             }
 
             const data = await response.json();
-            return data.text; 
+            return data.text;
 
         } catch (error) {
             this.logger.error(`Error procesando el buffer en ElevenLabs: ${error.message}`);
@@ -215,8 +147,48 @@ export class WhatsAppService {
 
     private async downloadWhatsAppAudio(message: any) {
         const data = message[0]
-        const buffer = await this.apiGetAudio(data.audio.id)
+        const buffer = await this.metaService.apiGetAudio(data.audio.id)
         const transcribeAudio = await this.transcribeAudioBuffer(buffer)
-        return assign(omit(data, ['audio']), {text: {body: transcribeAudio}})
+        // return assign(omit(data, ['audio']), { text: { body: transcribeAudio } })
+        return [{ text: transcribeAudio }]
+    }
+
+    private interactive(body: any) {
+        const text = get(body[0], "interactive.list_reply.title", "hola")
+        return [{ text }]
+    }
+
+
+    private async main(messages: any, appId: string, phone: number, botId: number, history: any) {
+        const routeInfo = await this.geminiService.agentRouter(history, messages.parts)
+
+        const models = await this.geminiService.agentPrincipal(
+            history,
+            messages.parts,
+            appId,
+            phone,
+            routeInfo,
+        )
+
+        console.log(models);
+        
+        const bot = {
+            role: "model",
+            parts: [{ text: models.message ?? "" }]
+        };
+        const user = pick(messages, ['role', 'parts'])
+
+
+        await Promise.all([
+            this.sessionManagerService.createSession(appId, botId, phone, user),
+            this.sessionManagerService.createSession(appId, botId, phone, bot),
+            this.metaService.sendMessages(models.message, phone)
+        ]);
+
+        return {
+            ...models,
+            routeInfo // Incluir info de routing para debugging
+        };
+
     }
 }

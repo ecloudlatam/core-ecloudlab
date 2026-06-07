@@ -13,11 +13,12 @@ export class DoubtService {
 
         try {
             const data = await this.doubtRepository.getAlls(appId)
-            return data
+            return {
+                success: true,
+                data
+            }
         } catch (error) {
             console.error(error)
-            throw new Error(error)
-
         }
 
     }

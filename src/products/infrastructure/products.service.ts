@@ -14,7 +14,7 @@ export class ProductsService {
     ) { }
 
     async create(products: CreateProductDto, appId: string) {
-        
+      
         const category = await this.categoryRepository.findone(products.category_id)
 
         if (!category) {
@@ -32,5 +32,8 @@ export class ProductsService {
     }
 
 
+    async findAll(){
+        return  await this.productsRepository.findAll()
+    }
 
 }

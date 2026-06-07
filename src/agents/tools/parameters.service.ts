@@ -1,4 +1,5 @@
 
+import { SupabaseService } from "@app/supabase";
 import { Type } from "@google/genai";
 
 
@@ -10,8 +11,8 @@ export const routerTool = {
         properties: {
             intent: {
                 type: Type.STRING,
-                description: "Intención identificada: 'register_debt', 'search_product', 'check_debt', 'contact_owner', 'general_chat', 'close_conversation'",
-                enum: ['register_debt', 'search_product', 'check_debt', 'contact_owner', 'general_chat', 'close_conversation']
+                description: "Intención identificada",
+                enum: ['register_debt','check_debt','search_product', 'register_product', 'contact_owner', 'general_chat', 'close_conversation']
             },
             confidence: {
                 type: Type.NUMBER,
@@ -26,7 +27,7 @@ export const routerTool = {
     }
 };
 
-const addedDoubt = {
+const registerDoubt = {
     name: "added-new-doubt",
     description: "Registra una nueva deuda del cliente",
     parameters: {
@@ -82,14 +83,44 @@ const checkDebt = {
     }
 };
 
+const registerProduct = {
+    name:"added-product",
+    description:"registrar un nuevo producto al local",
+    parameters:{
+        type: Type.OBJECT,
+        properties:{
+            name: {
+                type: Type.STRING,
+                description:"Nombre del producto"
+            },
+            description:{
+                type: Type.STRING,
+                description:"Descripcion del producto"
+            },
+            price:{
+                type: Type.NUMBER,
+                description: "Valor de producto"
+            }
+        }
+    }
+}
 
 export class ToolService {
+
+    constructor(private readonly supabase: SupabaseService){}
     
+    getTool() {
+        const db =  this.supabase.getClient()
+        
+    }   
+
+
     getToolsForIntent(intent?: string) {
         const toolMap = {
-            'register_debt': [addedDoubt],
-            'search_product': [searchProduct],
             'check_debt': [checkDebt],
+            'register_debt': [registerDoubt],
+            'search_product': [searchProduct],
+            'register_product':[registerProduct],
             'contact_owner': [],
             'general_chat': [],
             'close_conversation': []
@@ -97,7 +128,7 @@ export class ToolService {
 
         if (!intent || !toolMap[intent]) {
             // Si no hay intención clara, dar acceso a todas las herramientas
-            return [addedDoubt, searchProduct, checkDebt];
+            return [checkDebt];
         }
 
         return toolMap[intent];

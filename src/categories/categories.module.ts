@@ -15,7 +15,8 @@ import { SupabaseLibModule } from "@app/supabase";
         SupabaseLibModule,
         AuthModule
     ],
-    controllers:[CategoriesController]
+    controllers:[CategoriesController],
+    exports:[CategoriesService]
 })
 
 export class CategoriesModule {}

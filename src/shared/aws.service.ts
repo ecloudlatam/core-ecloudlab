@@ -1,5 +1,6 @@
 import { SupabaseService } from '@app/supabase';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage'
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { Injectable } from '@nestjs/common';
 
@@ -24,7 +25,7 @@ export class AwsService {
         return response
     }
 
-    async uploadToSupabaseS3(fileBuffer: Buffer, fileName: string) {
+    async uploadToSupabaseS3(Bucket: string, Body: any, Key: string, ContentType: string) {
 
         const s3Client = new S3Client({
             forcePathStyle: true,
@@ -36,15 +37,18 @@ export class AwsService {
             },
         });
 
-        const command = new PutObjectCommand({
-            Bucket: "minimarket",
-            Key: `audios/${fileName}`,
-            Body: fileBuffer,
-            ContentType: "audio/ogg",
+        const command = new Upload({
+            client: s3Client,
+            params: {
+                Bucket,
+                Key,
+                Body,
+                ContentType,
+            }
         });
 
         try {
-            const response = await s3Client.send(command);
+            const response = await command.done()
             return response;
         } catch (err) {
             console.error("Error subiendo con S3 SDK:", err);

@@ -6,6 +6,9 @@ import { ProductsModules } from "./products/products.module";
 import { CategoriesModule } from "./categories/categories.module";
 import { ChatsModule } from "./chats/chat.module";
 import { DoubtModule } from "./doubt/doubt.module";
+import { ClientsModule } from "./clients/clients.module";
+import { AgentModule } from "./agents/agent.module";
+import { MessageModule } from "./messages/messages.module";
 
 
 @Module({
@@ -13,9 +16,12 @@ import { DoubtModule } from "./doubt/doubt.module";
         AppsModule,
         UserModule,
         ChatsModule,
+        ClientsModule,
         ProductsModules,
         CategoriesModule,
+        AgentModule,
         DoubtModule,
+        MessageModule,
         RouterModule.register([
             {
                 path: "apps",
@@ -40,11 +46,18 @@ import { DoubtModule } from "./doubt/doubt.module";
             {
                 path: "categories",
                 module: CategoriesModule
-
             },
             {
-                path:"products",
-                module: ProductsModules
+                path:"agents",
+                module: AgentModule
+            },
+            {
+                path:"clients",
+                module: ClientsModule
+            },
+            {
+                path:"messages",
+                module: MessageModule
             }
         ])
     ],
