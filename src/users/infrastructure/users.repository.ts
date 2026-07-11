@@ -25,4 +25,14 @@ export class UsersRepository {
             
         }
     }
+
+    async findOne(userId: number){
+        try{
+            const supabase = this.supabaseService.getClient()
+            const data = await supabase.from('users')
+            return data
+        }catch(error){
+
+        }
+    }
 } 

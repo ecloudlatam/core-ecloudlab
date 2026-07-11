@@ -59,10 +59,8 @@ export class WhatsAppService {
             const message = await this.formatedText(body)
 
             if (!message) return message
-            console.log("message", message)
 
             const history = await this.sessionManagerService.getSession(appId, botId, phone)
-            console.log("history", history.length)
 
 
             if (message.type == "interactive") {
@@ -170,8 +168,6 @@ export class WhatsAppService {
             routeInfo,
         )
 
-        console.log(models);
-        
         const bot = {
             role: "model",
             parts: [{ text: models.message ?? "" }]
@@ -182,7 +178,7 @@ export class WhatsAppService {
         await Promise.all([
             this.sessionManagerService.createSession(appId, botId, phone, user),
             this.sessionManagerService.createSession(appId, botId, phone, bot),
-            this.metaService.sendMessages(models.message, phone)
+            this.metaService.sendMessages(models, phone)
         ]);
 
         return {

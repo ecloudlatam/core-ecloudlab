@@ -1,6 +1,7 @@
 // src/chats/infrastructure/chats.controller.ts
 import { Controller, Get, Post, Body, Query, HttpCode, HttpStatus, Logger, Param, Res } from '@nestjs/common';
 import { WhatsAppService } from './service/whatsapp.service';
+import { get } from 'lodash';
 
 @Controller('webhooks')
 export class ChatsController {
@@ -14,7 +15,7 @@ export class ChatsController {
     return this.whatsappService.webhook(query)
   }
 
- @Post(':appId') // O la ruta que manejes
+  @Post(':appId') // O la ruta que manejes
   async handleIncomingMessage(
     @Body() body: any,
     @Param('appId') appId: string,
@@ -22,12 +23,13 @@ export class ChatsController {
   ) {
     response.status(HttpStatus.OK).send('EVENT_RECEIVED');
 
-    const botId = 12345678;
-    const phone = 593983258685;
+    const value = body.entry[0].changes[0].value
+    const { wa_id } = get(value, 'contacts')[0]
 
+    const botId = 593939017821;
     try {
-      await this.whatsappService.events(appId, botId, phone, body)
-      await this.whatsappService.menuprincipal(appId, botId, phone, body);
+      await this.whatsappService.events(appId, botId, wa_id, body)
+      await this.whatsappService.menuprincipal(appId, botId, wa_id, body);
     } catch (error) {
       console.error('Error procesando agentShop:', error);
     }

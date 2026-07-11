@@ -20,4 +20,8 @@ export class UsersService {
     async findAll(): Promise<any>{
         return this.userReposity.findall()
     }
+
+    async findOne(userId: number): Promise<any>{
+        return  await this.userReposity.findOne(userId)
+    }
 }

@@ -99,7 +99,25 @@ export class GeminiService implements OnModuleInit {
                     systemInstruction,
                     tools: [{
                         functionDeclarations: availableTools
-                    }]
+                    }],
+                    responseSchema: {
+                        type: Type.OBJECT,
+                        properties: {
+                            message: {
+                                type: Type.STRING,
+                                description: "El mensaje de texto amigable que se le enviará al cliente por WhatsApp."
+                            },
+                            type:{
+                                type: Type.STRING,
+                                description:"contenido de los mensajes [text, img, docs, locations]",
+                            },
+                            imageUrl: {
+                                type: Type.STRING,
+                                description: "La URL pública o ID de la imagen del producto si el cliente solicitó ver un producto o si la herramienta la devolvió. De lo contrario, dejar vacío o null."
+                            }
+                        },
+                        required: ['message','type']
+                    }
                 },
                 history
             });
@@ -115,8 +133,8 @@ export class GeminiService implements OnModuleInit {
                 console.log("name", name)
                 const toolResponse = await this.functions.executeTools(name, args, appId, userId);
 
-                console.log("toolResponse=====",toolResponse);
-                
+                console.log("toolResponse=====", toolResponse);
+
 
                 // Segunda llamada: enviar resultado de la herramienta
                 resp = await chatSession.sendMessage({
@@ -133,9 +151,9 @@ export class GeminiService implements OnModuleInit {
 
             // Extraer el mensaje de respuesta y asegurar que no esté vacío
             const responseMessage = resp?.text ?? resp?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-            
+
             return {
-                message: responseMessage.trim() || "Operación completada exitosamente", 
+                message: responseMessage.trim() || "Operación completada exitosamente",
                 role: resp.candidates[0].content.role,
                 responseId: resp?.responseId,
                 intent: routeInfo?.intent,

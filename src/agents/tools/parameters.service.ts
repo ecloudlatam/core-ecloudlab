@@ -12,7 +12,7 @@ export const routerTool = {
             intent: {
                 type: Type.STRING,
                 description: "Intención identificada",
-                enum: ['register_debt','check_debt','search_product', 'register_product', 'contact_owner', 'general_chat', 'close_conversation']
+                enum: ['register_debt', 'check_debt', 'search_product', 'register_product', 'contact_owner', 'general_chat', 'close_conversation']
             },
             confidence: {
                 type: Type.NUMBER,
@@ -84,43 +84,76 @@ const checkDebt = {
 };
 
 const registerProduct = {
-    name:"added-product",
-    description:"registrar un nuevo producto al local",
-    parameters:{
+    name: "added-product",
+    description: "registrar un nuevo producto al local",
+    parameters: {
         type: Type.OBJECT,
-        properties:{
+        properties: {
             name: {
                 type: Type.STRING,
-                description:"Nombre del producto"
+                description: "Nombre del producto"
             },
-            description:{
+            description: {
                 type: Type.STRING,
-                description:"Descripcion del producto"
+                description: "Descripcion del producto"
             },
-            price:{
+            price: {
                 type: Type.NUMBER,
                 description: "Valor de producto"
+            },
+            cant: {
+                type: Type.NUMBER,
+                description: "Cantidad de productos"
+            },
+            category_id: {
+                type: Type.STRING,
+                description: "Categoria de producto"
+            },
+            images: {
+                type: Type.STRING,
+                description: "Imagen del producto"
             }
-        }
+        },
+        required: ['name', 'price', 'cant', 'category_id', 'images']
+    },
+}
+
+const sendMessage = {
+    name: "send-message",
+    description: "enviar mensaje",
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            caption: {
+                type: Type.STRING,
+                description: "mensajes para enviar"
+            },
+            type: {
+                type: Type.STRING,
+                description: "tipo de mensaje enviar al usuario"
+            }
+        },
+        required: ['caption','type']
     }
 }
 
 export class ToolService {
 
-    constructor(private readonly supabase: SupabaseService){}
-    
+    constructor(private readonly supabase: SupabaseService) { }
+
     getTool() {
-        const db =  this.supabase.getClient()
-        
-    }   
+        const db = this.supabase.getClient()
+
+    }
 
 
     getToolsForIntent(intent?: string) {
         const toolMap = {
+            'send_message': [sendMessage],
             'check_debt': [checkDebt],
             'register_debt': [registerDoubt],
             'search_product': [searchProduct],
-            'register_product':[registerProduct],
+            'register_product': [registerProduct],
             'contact_owner': [],
             'general_chat': [],
             'close_conversation': []

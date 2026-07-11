@@ -1,13 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { AwsService } from "src/shared/aws.service";
 import { pick, assign, omit, get } from "lodash"
+import { UsersService } from "src/users/infrastructure/users.service";
 
 
 @Injectable()
 export class MetaService {
     constructor(
-        private readonly awsService: AwsService
-
+        private readonly awsService: AwsService,
     ) {
 
     }
@@ -50,19 +50,58 @@ export class MetaService {
 
     }
 
-    async sendMessages(message: string, userId: number) {
+    async sendMessages(models: any, userId: number) {
 
+        const { message, type, imageUrl } = JSON.parse(models.message)
+
+
+        let body = {}
+        if (type === "text") {
+            body = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": userId,
+                "type": "text",
+                "text": {
+                    "body": message
+                }
+            }
+        }
+
+        if (type === "img") {
+            body = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": userId,
+                "type": "image",
+                "image": {
+                    "link": imageUrl,
+                    ...(message && { "caption": message })
+                }
+            };
+        }
+
+
+
+
+        this.apiPost("messages", body)
+
+    }
+
+    async sendImageByUrl(imageUrl: string, userId: number, caption?: string) {
         const body = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
             "to": userId,
-            "type": "text",
-            "text": {
-                "body": message
+            "type": "image",
+            "image": {
+                "link": imageUrl,
+                // El campo 'caption' es opcional, sirve para poner texto debajo de la foto
+                ...(caption && { "caption": caption })
             }
-        }
-        this.apiPost("messages", body)
+        };
 
+        await this.apiPost("messages", body);
     }
 
     async apiGetAudio(id: string) {
@@ -116,13 +155,17 @@ export class MetaService {
             const base64ParaGemini = Buffer.from(arrayBuffer).toString('base64');
 
 
-            const imgs = {
-                inlineData: {
-                    data: base64ParaGemini,
-                    mimeType: contentType
-                }
-            };
-            return [imgs]
+            const imgs = [
+                {
+                    text: urlPublicaSupabase,
+                },
+                {
+                    inlineData: {
+                        data: base64ParaGemini,
+                        mimeType: contentType
+                    }
+                }];
+            return imgs
 
         } catch (error) {
 
@@ -130,6 +173,8 @@ export class MetaService {
     }
 
     async menu(userId: number) {
+
+        
 
         const body =
         {

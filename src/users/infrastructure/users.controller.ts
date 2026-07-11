@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Logger, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { ApiKeyGuard } from "src/guards";
+import { stringify } from "querystring";
 
 @Controller()
 @UseGuards(ApiKeyGuard)
@@ -19,5 +20,10 @@ export class UsersControllers{
         const app = request['apps']
         const resp = await this.userService.create(createUserDto, app.id)
         return resp
+    }
+
+    @Get(':userId')
+    async user(@Param('userId') userId: number){
+        return await this.userService.findOne(userId)
     }
 }
