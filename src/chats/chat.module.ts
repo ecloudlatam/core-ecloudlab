@@ -16,11 +16,14 @@ import { ProductsService } from 'src/products/infrastructure/products.service';
 import { ProductsModules } from 'src/products/products.module';
 import { UserModule } from 'src/users/user.module';
 import { UsersService } from 'src/users/infrastructure/users.service';
+import { CreditModule } from 'src/credits/credit.module';
+import { CreditService } from 'src/credits/credit.service';
 
 @Module({
   imports: [
     AwsModule,
     DoubtModule,
+    CreditModule,
     ProductsModules,
     AgentModule,
     MessageModule,
@@ -31,6 +34,7 @@ import { UsersService } from 'src/users/infrastructure/users.service';
     SessionManagerService,
     WhatsAppService,
     GeminiService,
+    CreditService,
     DoubtService,
     FunctionService,
     MetaService,

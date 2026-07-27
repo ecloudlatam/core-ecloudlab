@@ -36,9 +36,7 @@ export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
       const key = `session:${appId}:${botId}:${phone}`;
       const session = await this.redisClient.lRange(key, 0, -1);
       return session.map((item: any) => JSON.parse(item));
-    } catch (error) {
-      console.log('error', error);
-    }
+    } catch (error) {}
   }
 
   async createSession(

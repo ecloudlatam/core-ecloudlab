@@ -102,7 +102,6 @@ export class WhatsAppService {
   }
 
   async typeMessage(key: string, message: any) {
-    console.log('key', key);
     switch (key) {
       case 'audio':
         return this.downloadWhatsAppAudio(message);
@@ -206,9 +205,15 @@ export class WhatsAppService {
         values,
       );
 
+      // 1. Si viene un objeto, extraes la propiedad de texto; si no, usas la variable tal cual
+      const text =
+        (typeof models.message === 'object'
+          ? get(models, 'message', '')
+          : models.message) ?? '';
+
       const bot = {
         role: 'model',
-        parts: [{ text: models.message ?? '' }],
+        parts: [{ text: text ?? '' }],
       };
       const user = pick(messages, ['role', 'parts']);
 

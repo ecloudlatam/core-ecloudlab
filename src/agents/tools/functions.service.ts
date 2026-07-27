@@ -4,6 +4,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ProductsService } from 'src/products/infrastructure/products.service';
 import { assign } from 'lodash';
 import { CreateProductDto } from 'src/products/dto/create.dto';
+import { CreditService } from 'src/credits/credit.service';
 
 type ApiResponse<T = void> = {
   success: boolean;
@@ -15,6 +16,7 @@ export class FunctionService {
   constructor(
     private readonly doubtService: DoubtService,
     private readonly productService: ProductsService,
+    private readonly creditService: CreditService,
   ) {}
   protected readonly logger = new Logger(FunctionService.name);
 
@@ -24,18 +26,22 @@ export class FunctionService {
     appId: string,
     userId: number,
   ): Promise<ApiResponse<any>> {
-    console.log('functionName', functionName);
-
     switch (functionName) {
-      case 'search-product':
-        return this.productService.findAll();
-      case 'added-product':
-        const addedProd = assign(
-          args,
-          { images: [args.images ?? ''] },
-          { category_id: 'ecc8ee5e-a56c-4a55-ac03-6f6d27dc52dc' },
-        ) as CreateProductDto;
+      case 'credit_get_all':
+        return await this.creditService.findAll();
+      case 'credit_register':
+        return await this.creditService.create(args, appId);
+      case 'product_find_all':
+        return await this.productService.findAll();
+      case 'product_find_one':
+        return await this.productService.searchProducts(args.name, args.type);
+      case 'product_register':
+        const addedProd = assign(args, {
+          images: [args.images ?? ''],
+        }) as CreateProductDto;
         return await this.productService.create(addedProd, appId);
+      case 'products_array_register':
+        return this.productService.createListProducts(args.products, appId);
       case 'added-new-doubt':
         // TODO: Integrar con base de datos real
         const { date, product, quantity, amount } = args;

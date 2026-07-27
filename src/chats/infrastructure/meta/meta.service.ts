@@ -50,7 +50,19 @@ export class MetaService {
   }
 
   async sendMessages(models: any, userId: number) {
-    const { message, type, imageUrl } = JSON.parse(models.message);
+    let message = models?.message ?? '';
+    let type = 'text';
+    let imageUrl = null;
+
+    // Intentar parsear solo si viene en formato JSON
+    try {
+      const parsed = JSON.parse(models.message);
+      message = parsed.message || message;
+      type = parsed.type || 'text';
+      imageUrl = parsed.imageUrl || null;
+    } catch {
+      // Si no es SON (ej. "Operación completada exitosamente"), se mantiene como texto plano
+    }
 
     let body = {};
     if (type === 'text') {
@@ -118,9 +130,7 @@ export class MetaService {
       const arrayBuffer = await responseFile.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       return buffer;
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 
   async apiGetImg(body: any) {
@@ -251,8 +261,6 @@ export class MetaService {
           },
         },
       };
-
-      console.log('body ====', body);
 
       const resp = await this.apiPost('messages', body);
       return resp;

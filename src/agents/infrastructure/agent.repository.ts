@@ -11,9 +11,7 @@ export class AgentsRepository {
       const db = this.supabaseService.getClient();
       const agent = await db.from('agents').select();
       return agent;
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 
   async fndOne(slug: string) {
@@ -45,7 +43,8 @@ export class AgentsRepository {
               id,
               key,
               description,
-              type
+              type,
+              required
             )
           )
         )

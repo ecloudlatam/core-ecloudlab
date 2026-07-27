@@ -78,7 +78,6 @@ export class GeminiService implements OnModuleInit {
 
       return routeResult;
     } catch (error) {
-      console.log('eroro agente router', error);
       return {
         intent: 'general_chat',
         confidence: 0.3,
@@ -104,6 +103,7 @@ export class GeminiService implements OnModuleInit {
         properties[param.key] = {
           type: paramType,
           description: param.description,
+          ...(param.type === 'ARRAY' && { items: { type: Type.STRING } }),
         };
 
         // Si tienes un flag 'required' en la BD lo agregas aquí; de lo contrario agrega las claves necesarias
@@ -136,22 +136,17 @@ export class GeminiService implements OnModuleInit {
     routeInfo: any,
     values: any,
   ) {
-    console.log('values ===', values);
     try {
-      const day = dayjs().format('YYYY-MM-DD');
-
       const { model, prompt, pivot_agents_tools } = values;
 
       const tools = this.mapTools(pivot_agents_tools);
 
+      console.log('tools ====', JSON.stringify(tools));
+
       const promptTemplate = PromptTemplate.fromTemplate(prompt);
 
       const systemInstruction = await promptTemplate.format({
-        name: 'paula',
-        day,
-        extractedData: routeInfo?.extractedData
-          ? `${JSON.stringify(routeInfo.extractedData)}`
-          : '',
+        extractedData: '',
       });
 
       const chatSession = this.client.chats.create({
@@ -193,21 +188,16 @@ export class GeminiService implements OnModuleInit {
         message: messageInput,
       });
 
-      console.log('resp ===', resp);
-
       // Si hay function calls, ejecutarlas
       const functionCalls = resp.functionCalls ?? [];
       if (functionCalls.length > 0) {
         const { name, args } = functionCalls[0];
-        console.log('name', name);
         const toolResponse = await this.functions.executeTools(
           name,
           args,
           appId,
           userId,
         );
-
-        console.log('toolResponse=====', toolResponse);
 
         // Segunda llamada: enviar resultado de la herramienta
         resp = await chatSession.sendMessage({
