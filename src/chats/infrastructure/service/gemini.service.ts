@@ -10,7 +10,6 @@ import { FunctionService } from '../../../agents/tools/functions.service';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { AgentService } from 'src/agents/infrastructure/agent.service';
 import { UsersService } from 'src/users/infrastructure/users.service';
-import { forEach, forIn, get, head } from 'lodash';
 
 @Injectable()
 export class GeminiService implements OnModuleInit {
@@ -40,6 +39,7 @@ export class GeminiService implements OnModuleInit {
     config: any,
   ) {
     try {
+      console.log('agent ===', agent);
       const { model, prompt } = agent;
 
       const promptTemplate = PromptTemplate.fromTemplate(prompt);
@@ -63,6 +63,8 @@ export class GeminiService implements OnModuleInit {
       const response = await routerSession.sendMessage({
         message: messageInput,
       });
+
+      console.log('response ===', response);
 
       const functionCalls = response.functionCalls ?? [];
       if (functionCalls.length === 0) {
@@ -137,6 +139,7 @@ export class GeminiService implements OnModuleInit {
     values: any,
   ) {
     try {
+      console.log('values ===', values);
       const { model, prompt, pivot_agents_tools } = values;
 
       const tools = this.mapTools(pivot_agents_tools);

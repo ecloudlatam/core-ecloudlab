@@ -193,8 +193,11 @@ export class WhatsAppService {
         config,
       );
       const { intent } = routeInfo;
+      console.log('intent= ===', intent);
       const agentComplements = await this.agentService.findAgentTools(intent);
       const values = agentComplements.data;
+
+      console.log('agentComplements= ===', agentComplements);
 
       const models = await this.geminiService.agentPrincipal(
         history,

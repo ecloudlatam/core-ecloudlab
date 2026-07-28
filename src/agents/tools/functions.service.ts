@@ -36,14 +36,19 @@ export class FunctionService {
       case 'product_find_one':
         return await this.productService.searchProducts(args.name, args.type);
       case 'product_register':
-        const addedProd = assign(args, {
-          images: [args.images ?? ''],
-        }) as CreateProductDto;
-        return await this.productService.create(addedProd, appId);
+        const data = {
+          name: args.name,
+          price: args.price,
+          cant: args.cant,
+          supplier: args.supplier,
+          variants: JSON.parse(args.variants),
+        } as CreateProductDto;
+        console.log('data ===', data);
+        return await this.productService.create(data, appId);
       case 'products_array_register':
         return this.productService.createListProducts(args.products, appId);
       case 'added-new-doubt':
-        // TODO: Integrar con base de datos real
+        // TODO: Integrar con base de datos
         const { date, product, quantity, amount } = args;
         return await this.doubtService.create(appId, userId, [
           { name: product, price: amount },

@@ -7,7 +7,10 @@ import {
   IsArray,
   IsBoolean,
   IsUUID,
+  ValidateNested,
 } from 'class-validator';
+import { CreateVariantDto } from './create-variant.dto';
+import { Type } from 'class-transformer';
 
 export class CreateProductDto {
   @IsString()
@@ -29,16 +32,12 @@ export class CreateProductDto {
   @IsString()
   supplier: string;
 
-  @IsUUID('4', { message: 'El id de la categoría debe ser un UUID v4 válido' })
-  @IsOptional()
-  category_id: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  images?: string[];
-
   @IsBoolean()
   @IsOptional()
   is_available?: boolean;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateVariantDto)
+  variants?: CreateVariantDto[];
 }

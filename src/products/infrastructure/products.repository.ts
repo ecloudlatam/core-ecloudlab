@@ -1,6 +1,7 @@
 import { SupabaseLibModule, SupabaseService } from '@app/supabase';
 import { Inject, Injectable } from '@nestjs/common';
 import { omit } from 'lodash';
+import { CreateVariantDto } from '../dto/create-variant.dto';
 
 @Injectable()
 export class ProductsRepository {
@@ -12,6 +13,22 @@ export class ProductsRepository {
 
       return response;
     } catch (error) {}
+  }
+
+  async createProductPrices(product: CreateVariantDto) {
+    try {
+      console.log('products ===', product);
+      const db = this.supabaseService.getClient();
+      const response = await db
+        .from('product_variants')
+        .insert([product])
+        .select();
+      console.log('response ===', response);
+
+      return response;
+    } catch (error) {
+      console.log('error ===', error);
+    }
   }
 
   async findOne(embedding: any) {
@@ -35,15 +52,9 @@ export class ProductsRepository {
       const data = await db
         .from('products')
         .select(
-          `
-          *,
-          suppliers!inner (
-            id,
-            name
-          )
-        `,
+          `id, name, images, cant, sku,suppliers!inner(id,name), product_variants (id, stock, unit_type ,price_buy, price_sell)`,
         )
-        .ilike('suppliers.name', `%${supplierName}%`); // ilike para búsqueda insensible a mayúsculas/minúsculas
+        .ilike('suppliers.name', `%${supplierName}%`);
       return data;
     } catch (error) {
       throw error;
@@ -53,7 +64,11 @@ export class ProductsRepository {
   async findAll(): Promise<any> {
     try {
       const db = this.supabaseService.getClient();
-      return await db.from('products').select();
+      return await db
+        .from('products')
+        .select(
+          `id, name, images, cant, sku, product_variants (id, stock, unit_type, price_buy, price_sell)`,
+        );
     } catch (error) {}
   }
 }

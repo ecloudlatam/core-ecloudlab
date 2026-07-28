@@ -5,6 +5,7 @@ import { CreateProductDto } from '../dto/create.dto';
 import { GeminiService } from 'src/common/gemini/gemini.service';
 import { omit, isEmpty } from 'lodash';
 import { SuppliersRepository } from 'src/suppliers/supplier.repository';
+import { CreateVariantWithExtraDto } from '../dto/create-variant.dto';
 
 @Injectable()
 export class ProductsService {
@@ -36,12 +37,12 @@ export class ProductsService {
       name: products.name,
       price: products.price,
       cant: products.cant,
-      images: products.images,
       embedding,
       supplier_id,
     };
 
     const response = await this.productsRepository.create(payload);
+
     // 2. Manejar posibles errores
     if (response.error || !response.data) {
       return {
@@ -49,6 +50,22 @@ export class ProductsService {
         data: null,
         error: response.error?.message || 'Error al insertar el producto',
       };
+    }
+
+    const { id } = response.data[0];
+
+    for (let index = 0; index < products.variants.length; index++) {
+      const data = products.variants[index];
+      const product = {
+        product_id: id,
+        sku: data.sku,
+        stock: data.stock,
+        price_buy: data.price_buy,
+        unit_type: data.unit_type,
+        price_sell: data.price_sell,
+        image_url: data.image_url || '',
+      };
+      await this.productsRepository.createProductPrices(product);
     }
 
     // 3. Limpiar los productos omitiendo el 'embedding'
@@ -99,5 +116,9 @@ export class ProductsService {
     } catch (error) {
       return { success: false, message: 'hubo errores para registrar datos' };
     }
+  }
+
+  async insert(product: CreateVariantWithExtraDto) {
+    return await this.productsRepository.createProductPrices(product);
   }
 }
