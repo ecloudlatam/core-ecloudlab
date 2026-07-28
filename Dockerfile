@@ -1,26 +1,26 @@
 FROM node:24-alpine AS base
 RUN corepack enable
 
-# 1. Instalación de todas las dependencias (Dev + Prod)
+# 1. Instalar dependencias completas (dev + prod)
 FROM base AS install
 WORKDIR /app
-COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package*.json pnpm-lock.yaml ./
+RUN pnpm install
 
-# 2. Compilación del proyecto NestJS
+# 2. Compilar NestJS
 FROM base AS build
 WORKDIR /app
 COPY . .
 COPY --from=install /app/node_modules ./node_modules
 RUN pnpm build
 
-# 3. Preparación de dependencias de PRODUCCIÓN (sin devDependencies)
+# 3. Solo dependencias de producción
 FROM base AS production-deps
 WORKDIR /app
-COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+COPY package*.json pnpm-lock.yaml ./
+RUN pnpm install --prod --no-frozen-lockfile
 
-# 4. Imagen final ultraligera de producción
+# 4. Imagen final ligera
 FROM base AS deploy
 WORKDIR /app
 COPY --from=production-deps /app/node_modules ./node_modules
