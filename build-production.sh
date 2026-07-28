@@ -1,10 +1,13 @@
 #!/bin/bash
 
-echo "🔧 Construyendo y subiendo imagen Docker para production..."
+echo "🔧 Construyendo imagen Docker para producción..."
 
-docker buildx build \
+docker build \
   --platform linux/amd64 \
-  --push \
   -t edrians/whatsapp-ecommerce:v1 .
 
-echo "✅ Imagen creada y publicada en Docker Hub: edrians/whatsapp-ecommerce:v1"
+echo "🚀 Subiendo imagen a Docker Hub..."
+
+docker push edrians/whatsapp-ecommerce:v1
+
+echo "✅ Imagen creada y publicada con éxito en Docker Hub: edrians/whatsapp-ecommerce:v1"
