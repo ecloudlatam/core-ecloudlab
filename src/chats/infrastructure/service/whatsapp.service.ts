@@ -69,6 +69,8 @@ export class WhatsAppService {
     try {
       const message = await this.formatedText(body);
 
+      console.log('message ===', message);
+
       if (!message) return message;
 
       const history = await this.sessionManagerService.getSession(
