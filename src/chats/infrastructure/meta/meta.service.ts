@@ -133,6 +133,49 @@ export class MetaService {
     } catch (error) {}
   }
 
+  async transcribeDocuments(body: any) {
+    try {
+      const data = body[0];
+      const resp = await fetch(data.document.url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN_MESSAGE}`,
+        },
+      });
+      const s3Key = `whatsapp/documents/pdf/${data.image.id}.pdf`;
+      const bucket = 'minimarket';
+
+      const contentType = resp.headers.get('content-type') || 'application/pdf';
+      const mediaStream = resp.body; // Esto es un ReadableStream nativo
+      await this.awsService.uploadToSupabaseS3(
+        bucket,
+        mediaStream,
+        s3Key,
+        contentType,
+      );
+
+      const urlPublicaSupabase = `https://oevymuwxtjigqywbewpe.storage.supabase.co/storage/v1/object/public/${bucket}/${s3Key}`;
+      const supabaseResp = await fetch(urlPublicaSupabase);
+      const arrayBuffer = await supabaseResp.arrayBuffer();
+      const base64ParaGemini = Buffer.from(arrayBuffer).toString('base64');
+
+      const docs = [
+        {
+          text: urlPublicaSupabase,
+        },
+        {
+          inlineData: {
+            data: base64ParaGemini,
+            mimeType: contentType,
+          },
+        },
+      ];
+      return docs;
+    } catch (error) {
+      console.log('error ===', error);
+    }
+  }
+
   async apiGetImg(body: any) {
     try {
       const data = body[0];

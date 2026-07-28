@@ -107,6 +107,8 @@ export class WhatsAppService {
     switch (key) {
       case 'audio':
         return this.downloadWhatsAppAudio(message);
+      case 'document':
+        return this.metaService.transcribeDocuments(message);
       case 'text':
         const { text } = message[0];
         return [{ text: text.body }];
@@ -214,7 +216,7 @@ export class WhatsAppService {
           config,
         );
         intent = routeInfo.intent;
-        
+
         // Guardar el intent en Redis para próximas interacciones
         await this.sessionManagerService.setLastIntent(
           appId,
