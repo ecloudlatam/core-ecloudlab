@@ -143,7 +143,7 @@ export class MetaService {
           Authorization: `Bearer ${process.env.WHATSAPP_TOKEN_MESSAGE}`,
         },
       });
-      const s3Key = `whatsapp/documents/pdf/${data.image.id}.pdf`;
+      const s3Key = `whatsapp/documents/pdf/${data.document.id}.pdf`;
       const bucket = 'minimarket';
 
       const contentType = resp.headers.get('content-type') || 'application/pdf';
