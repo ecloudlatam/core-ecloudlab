@@ -1,11 +1,11 @@
 FROM node:24-alpine AS base
 RUN corepack enable
 
-# 1. Instalar dependencias completas (dev + prod)
+# 1. Instalar dependencias completas sin ejecutar scripts de ciclo de vida (Husky)
 FROM base AS install
 WORKDIR /app
 COPY package*.json pnpm-lock.yaml ./
-RUN pnpm install
+RUN pnpm install --ignore-scripts
 
 # 2. Compilar NestJS
 FROM base AS build
@@ -14,7 +14,7 @@ COPY . .
 COPY --from=install /app/node_modules ./node_modules
 RUN pnpm build
 
-# 3. Solo dependencias de producción (ignoramos scripts de lifecycle como Husky)
+# 3. Solo dependencias de producción
 FROM base AS production-deps
 WORKDIR /app
 COPY package*.json pnpm-lock.yaml ./
