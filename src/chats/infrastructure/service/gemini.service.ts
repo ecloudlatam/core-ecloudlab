@@ -80,6 +80,7 @@ export class GeminiService implements OnModuleInit {
 
       return routeResult;
     } catch (error) {
+      console.log('error ==', error);
       return {
         intent: 'general_chat',
         confidence: 0.3,
