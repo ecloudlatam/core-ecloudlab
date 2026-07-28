@@ -23,7 +23,6 @@ export class ProductsRepository {
         .from('product_variants')
         .insert([product])
         .select();
-      console.log('response ===', response);
 
       return response;
     } catch (error) {

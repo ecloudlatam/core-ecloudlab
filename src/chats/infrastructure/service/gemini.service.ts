@@ -64,8 +64,6 @@ export class GeminiService implements OnModuleInit {
         message: messageInput,
       });
 
-      console.log('response ===', response);
-
       const functionCalls = response.functionCalls ?? [];
       if (functionCalls.length === 0) {
         // Fallback si no usa la herramienta
