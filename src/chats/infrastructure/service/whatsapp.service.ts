@@ -109,6 +109,7 @@ export class WhatsAppService {
   }
 
   async typeMessage(key: string, message: any) {
+    console.log('typeMessage ==', message);
     switch (key) {
       case 'audio':
         return this.downloadWhatsAppAudio(message);
