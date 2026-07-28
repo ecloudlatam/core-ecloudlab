@@ -18,6 +18,10 @@ export class CreateVariantDto {
   @Min(0)
   price_sell: number;
 
+  @IsNumber()
+  @Min(0)
+  tax_rate: number;
+
   @IsString()
   @IsOptional()
   image_url?: string;

@@ -20,10 +20,6 @@ export class CreateProductDto {
   @IsOptional()
   description?: string;
 
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  price: number;
-
   @IsNumber()
   @Min(1)
   cant: number;

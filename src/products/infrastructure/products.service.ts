@@ -31,7 +31,6 @@ export class ProductsService {
       app_id: appId,
       slug: products.name.replaceAll(' ', '-'),
       name: products.name,
-      price: products.price,
       cant: products.cant,
       embedding,
       supplier_id,
@@ -59,6 +58,7 @@ export class ProductsService {
         price_buy: data.price_buy,
         unit_type: data.unit_type,
         price_sell: data.price_sell,
+        tax_rate: data.tax_rate,
         image_url: data.image_url || '',
       };
       await this.productsRepository.createProductPrices(product);

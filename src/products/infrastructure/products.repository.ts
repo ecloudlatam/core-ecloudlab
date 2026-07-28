@@ -50,7 +50,7 @@ export class ProductsRepository {
       const data = await db
         .from('products')
         .select(
-          `id, name, images, cant, sku,suppliers!inner(id,name), product_variants (id, stock, unit_type ,price_buy, price_sell)`,
+          `id, name, images, cant, sku,suppliers!inner(id,name), product_variants (id, stock, unit_type ,price_buy, price_sell, tax_rate)`,
         )
         .ilike('suppliers.name', `%${supplierName}%`);
       return data;
@@ -65,7 +65,7 @@ export class ProductsRepository {
       return await db
         .from('products')
         .select(
-          `id, name, images, cant, sku, product_variants (id, stock, unit_type, price_buy, price_sell)`,
+          `id, name, images, cant, sku, product_variants (id, stock, unit_type, price_buy, price_sell, tax_rate)`,
         );
     } catch (error) {}
   }
