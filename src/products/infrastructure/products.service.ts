@@ -15,6 +15,7 @@ export class ProductsService {
   ) {}
 
   async create(products: CreateProductDto, appId: string) {
+    console.log('products ====', products);
     const { supplier } = products;
     const { data } = await this.supplierRepository.findOne(supplier);
     let supplier_id = '';
