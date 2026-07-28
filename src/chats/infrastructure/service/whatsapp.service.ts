@@ -229,7 +229,6 @@ export class WhatsAppService {
         this.logger.log(`🔀 Router ejecutado - Intent guardado: ${intent}`);
       }
 
-      console.log('intent= ===', intent);
       const agentComplements = await this.agentService.findAgentTools(intent);
       const values = agentComplements.data;
 

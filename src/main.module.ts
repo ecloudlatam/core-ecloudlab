@@ -9,8 +9,10 @@ import { DoubtModule } from './doubt/doubt.module';
 import { ClientsModule } from './clients/clients.module';
 import { AgentModule } from './agents/agent.module';
 import { MessageModule } from './messages/messages.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
+  controllers: [HealthController],
   imports: [
     AppsModule,
     UserModule,
