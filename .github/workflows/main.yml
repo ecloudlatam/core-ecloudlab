@@ -30,7 +30,9 @@ jobs:
           echo '{"experimental": "enabled"}' > ~/.docker/config.json
 
       - name: Run production Docker build
-        run: ./build-production.sh
+        run: |
+          chmod +x ./build-production.sh
+          ./build-production.sh
 
       - name: Log into Docker Hub
         uses: docker/login-action@v2
