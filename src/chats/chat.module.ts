@@ -12,7 +12,6 @@ import { FunctionService } from '../agents/tools/functions.service';
 import { AgentModule } from 'src/agents/agent.module';
 import { MessageModule } from 'src/messages/messages.module';
 import { MetaService } from './infrastructure/meta/meta.service';
-import { ProductsService } from 'src/products/infrastructure/products.service';
 import { ProductsModules } from 'src/products/products.module';
 import { UserModule } from 'src/users/user.module';
 import { UsersService } from 'src/users/infrastructure/users.service';

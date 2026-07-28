@@ -6,12 +6,6 @@ import {
 } from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
 
-interface ChatMessage {
-  botId: number;
-  phone: number;
-  history: any;
-}
-
 @Injectable()
 export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
   private redisClient: RedisClientType;
@@ -51,7 +45,7 @@ export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
       await this.redisClient.expire(key, 1000);
       return res;
     } catch (error) {
-      throw new Error(error);
+      this.logger.error(`Error guardando intent en Redis: ${error}`);
     }
   }
 
@@ -67,7 +61,7 @@ export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
       await this.redisClient.set(key, intent, { EX: 1000 }); // Expira en 1000 segundos
       this.logger.debug(`✅ Intent guardado en Redis: ${intent}`);
     } catch (error) {
-      this.logger.error(`Error guardando intent en Redis: ${error.message}`);
+      this.logger.error(`Error guardando intent en Redis: ${error}`);
     }
   }
 
@@ -80,12 +74,10 @@ export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
     try {
       const key = `intent:${appId}:${botId}:${userId}`;
       const intent = await this.redisClient.get(key);
-      if (intent) {
-        this.logger.debug(`♻️ Intent recuperado de Redis: ${intent}`);
-      }
-      return intent;
+
+      return typeof intent === 'string' ? intent : null;
     } catch (error) {
-      this.logger.error(`Error obteniendo intent de Redis: ${error.message}`);
+      this.logger.error(`Error obteniendo intent de Redis: ${error || error}`);
       return null;
     }
   }
@@ -97,7 +89,7 @@ export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
       await this.redisClient.del(key);
       this.logger.debug(`🗑️ Intent limpiado de Redis`);
     } catch (error) {
-      this.logger.error(`Error limpiando intent de Redis: ${error.message}`);
+      this.logger.error(`Error limpiando intent de Redis: ${error}`);
     }
   }
 }

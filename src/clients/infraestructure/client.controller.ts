@@ -1,13 +1,10 @@
-import { Controller, Post } from "@nestjs/common";
-import { ClientService } from "./client.service";
-
+import { Controller, Post } from '@nestjs/common';
+import { ClientService } from './client.service';
 
 @Controller()
-export class ClientController{
-    constructor(private readonly clientService: ClientService){}
+export class ClientController {
+  constructor(private readonly clientService: ClientService) {}
 
-    @Post()
-    async create(){
-
-    }
+  @Post()
+  async create() {}
 }

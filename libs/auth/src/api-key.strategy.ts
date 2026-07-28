@@ -6,17 +6,23 @@ import * as crypto from 'crypto';
 import { AuthService } from './auth.service';
 
 @Injectable()
-export class ApiKeyStrategy extends PassportStrategy(HeaderAPIKeyStrategy, 'api-key') {
+export class ApiKeyStrategy extends PassportStrategy(
+  HeaderAPIKeyStrategy,
+  'api-key',
+) {
   constructor(private readonly authService: AuthService) {
     super(
       { header: 'X-API-KEY', prefix: '' },
-      true // passReqToCallback
+      true, // passReqToCallback
     );
   }
 
   async validate(req: any, apiKey: string): Promise<any> {
     // 1. Obtenemos el hash SHA-256 del token que envió el cliente
-    const hashEntrante = crypto.createHash('sha256').update(apiKey).digest('hex');
+    const hashEntrante = crypto
+      .createHash('sha256')
+      .update(apiKey)
+      .digest('hex');
 
     // 2. Delegamos al AuthService la validación en Supabase usando el hash
     const appValida = await this.authService.validarApiKey(hashEntrante);

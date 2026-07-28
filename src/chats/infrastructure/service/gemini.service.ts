@@ -1,28 +1,14 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { GoogleGenAI, Type } from '@google/genai';
-import { AwsService } from 'src/shared/aws.service';
-import {
-  routerTool,
-  ToolService,
-} from '../../../agents/tools/parameters.service';
-import * as dayjs from 'dayjs';
 import { FunctionService } from '../../../agents/tools/functions.service';
 import { PromptTemplate } from '@langchain/core/prompts';
-import { AgentService } from 'src/agents/infrastructure/agent.service';
-import { UsersService } from 'src/users/infrastructure/users.service';
 
 @Injectable()
 export class GeminiService implements OnModuleInit {
   protected readonly logger = new Logger(GeminiService.name);
   private client: GoogleGenAI;
 
-  constructor(
-    private readonly awsService: AwsService,
-    private readonly tools: ToolService,
-    private readonly functions: FunctionService,
-    private readonly agentService: AgentService,
-    private readonly userClient: UsersService,
-  ) {}
+  constructor(private readonly functions: FunctionService) {}
 
   onModuleInit() {
     this.client = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
@@ -39,7 +25,7 @@ export class GeminiService implements OnModuleInit {
     config: any,
   ) {
     try {
-      console.log('agent ===', agent);
+      console.log('agent ===', agent, userId);
       const { model, prompt } = agent;
 
       const promptTemplate = PromptTemplate.fromTemplate(prompt);

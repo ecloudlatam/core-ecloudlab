@@ -12,18 +12,16 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "shared/auth": [
-        "libs/auth/src"
-      ],
-      "shared/auth/*": [
-        "libs/auth/src/*"
-      ],
+      "shared/auth": ["libs/auth/src"],
+      "shared/auth/*": ["libs/auth/src/*"],
       "@app/supabase": ["libs/supabase/src"],
       "@app/supabase/*": ["libs/supabase/src/*"],
       "@app/auth": ["libs/auth/src"]

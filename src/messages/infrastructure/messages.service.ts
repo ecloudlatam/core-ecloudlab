@@ -3,21 +3,19 @@ import { MessageRepository } from './messages.repository';
 
 @Injectable()
 export class MessageService {
+  constructor(private readonly userReposity: MessageRepository) {}
 
-    constructor(private readonly userReposity: MessageRepository ){}
+  async create(body: any, appId: string): Promise<any> {
+    const payload = {
+      ...body,
+      app_id: appId,
+    };
 
-    async create(body: any, appId: string): Promise<any>{
+    const data = await this.userReposity.create(payload);
+    return { status: data };
+  }
 
-        const payload = {
-            ...body,
-            app_id: appId,
-        };
-
-        const data = await this.userReposity.create(payload)
-        return {"status":data}
-    }
-
-    async findAll(): Promise<any>{
-        return this.userReposity.findall()
-    }
+  async findAll(): Promise<any> {
+    return this.userReposity.findall();
+  }
 }

@@ -1,12 +1,8 @@
-import { SupabaseLibModule, SupabaseService } from "@app/supabase";
-import { Injectable } from "@nestjs/common";
-
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class ClientRepository{
-    constructor(private supabase: SupabaseService){}
+export class ClientRepository {
+  constructor() {}
 
-    async create(){
-        const db = this.supabase.getClient()
-    }
+  async create() {}
 }

@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Logger,
   Param,
   Post,
   Req,
@@ -10,13 +9,10 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ApiKeyGuard } from 'src/guards';
-import { stringify } from 'querystring';
 
 @Controller()
 @UseGuards(ApiKeyGuard)
 export class UsersControllers {
-  private readonly logger = new Logger(UsersControllers.name);
-
   constructor(private readonly userService: UsersService) {}
 
   @Get()

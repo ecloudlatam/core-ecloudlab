@@ -1,15 +1,14 @@
-import { IsNotEmpty, IsNumber, IsString, IsUUID, Min } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, IsUUID, Min } from 'class-validator';
 
+export class CreateDoubtDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
-export class CreateDoubtDto{
-    @IsString()
-    @IsNotEmpty()
-    name: string
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  price: number;
 
-    @IsNumber({maxDecimalPlaces: 2})
-    @Min(0)
-    price: number
-
-    @IsUUID('4')
-    app_id: string
+  @IsUUID('4')
+  app_id: string;
 }

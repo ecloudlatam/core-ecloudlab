@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { SupabaseLibModule } from '@app/supabase';
-import { AwsService } from './aws.service'
+import { AwsService } from './aws.service';
 
 @Module({
-    imports: [
-        SupabaseLibModule
-    ],
-    providers: [AwsService],
-    exports: [AwsService]
+  imports: [SupabaseLibModule],
+  providers: [AwsService],
+  exports: [AwsService],
 })
-export class AwsModule { }
+export class AwsModule {}

@@ -5,9 +5,7 @@ import {
   Post,
   Body,
   Query,
-  HttpCode,
   HttpStatus,
-  Logger,
   Param,
   Res,
 } from '@nestjs/common';
@@ -16,8 +14,6 @@ import { get } from 'lodash';
 
 @Controller('webhooks')
 export class ChatsController {
-  private readonly logger = new Logger(ChatsController.name);
-
   constructor(private readonly whatsappService: WhatsAppService) {}
 
   @Get(':appId')

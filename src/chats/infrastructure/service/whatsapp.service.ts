@@ -1,9 +1,8 @@
-import { ForbiddenException, Injectable, Logger, Query } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { GeminiService } from './gemini.service';
 import { SessionManagerService } from './session-redis.service';
-import { pick, assign, omit, get } from 'lodash';
+import { pick, get } from 'lodash';
 import { MessageService } from 'src/messages/infrastructure/messages.service';
-import { AwsService } from 'src/shared/aws.service';
 import { MetaService } from '../meta/meta.service';
 import { UsersService } from 'src/users/infrastructure/users.service';
 import { AgentService } from 'src/agents/infrastructure/agent.service';
@@ -15,13 +14,11 @@ export class WhatsAppService {
     private readonly geminiService: GeminiService,
     private readonly messageService: MessageService,
     private readonly metaService: MetaService,
-    private readonly awsService: AwsService,
     private readonly useService: UsersService,
     private readonly agentService: AgentService,
   ) {}
 
   private readonly logger = new Logger(WhatsAppService.name);
-  private readonly baseUrl = `${process.env.WHATSAPP_BASE_URL}/v25.0/${process.env.WHATSAPP_BUSINESS_PHONE_NUMBER_ID}`;
 
   webhook(query: any) {
     const mode = query['hub.mode'];
@@ -40,26 +37,32 @@ export class WhatsAppService {
   }
 
   async events(appId: string, botId: number, userId: number, body: any) {
-    const value = body.entry[0].changes[0].value;
+    const value = body?.entry?.[0]?.changes?.[0]?.value;
 
-    let payload = {
+    if (!value) {
+      return;
+    }
+
+    let payload: Record<string, any> = {
       bot_id: botId,
       reference_id: userId,
       status: 'api',
       response: value,
     };
-    if (value.statuses) {
-      const { statuses } = value;
 
-      const unixSeconds = parseInt(statuses[0].timestamp, 10);
+    if (value.statuses && value.statuses.length > 0) {
+      // Desestructuramos el primer elemento directamente
+      const [firstStatus] = value.statuses;
+
+      const unixSeconds = parseInt(firstStatus.timestamp, 10);
       const dateObject = new Date(unixSeconds * 1000);
 
-      const supabaseTimestamp = dateObject.toISOString();
-      payload = assign(payload, {
-        wam_id: statuses[0].id,
-        status: statuses[0].status,
-        timestamp: supabaseTimestamp,
-      });
+      payload = {
+        ...payload,
+        wam_id: firstStatus.id,
+        status: firstStatus.status,
+        timestamp: dateObject.toISOString(),
+      };
     }
 
     await this.messageService.create(payload, appId);
@@ -96,7 +99,7 @@ export class WhatsAppService {
   }
 
   async formatedText(payload: any) {
-    const { messages, statuses = [] } = payload.entry[0].changes[0].value;
+    const { messages } = payload.entry[0].changes[0].value;
 
     if (!messages) return null;
     const { id, type } = messages[0];
@@ -168,7 +171,6 @@ export class WhatsAppService {
     const data = message[0];
     const buffer = await this.metaService.apiGetAudio(data.audio.id);
     const transcribeAudio = await this.transcribeAudioBuffer(buffer);
-    // return assign(omit(data, ['audio']), { text: { body: transcribeAudio } })
     return [{ text: transcribeAudio }];
   }
 
@@ -176,8 +178,6 @@ export class WhatsAppService {
     const text = get(body[0], 'interactive.list_reply.title', 'hola');
     return [{ text }];
   }
-
-  private async session() {}
 
   private async main(
     messages: any,
@@ -187,7 +187,7 @@ export class WhatsAppService {
     history: any,
   ) {
     try {
-      const { success = false, data } = await this.useService.findOne(userId);
+      const { success = false } = await this.useService.findOne(userId);
       const routerPrincipal = success ? 'router_vendedor' : 'router_client';
       const agentPrincipal = await this.agentService.findOne(routerPrincipal);
 

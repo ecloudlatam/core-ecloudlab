@@ -5,7 +5,6 @@ import { ProductsRepository } from './infrastructure/products.repository';
 import { CategoriesRepository } from 'src/categories/infrastructure/categories.repository';
 import { AuthModule } from '@app/auth';
 import { ProductsService } from './infrastructure/products.service';
-import { GeminiService } from 'src/common/gemini/gemini.service';
 import { GeminiModule } from 'src/common/gemini/gemini.module';
 import { SupplierModule } from 'src/suppliers/supplier.module';
 import { SupplierService } from 'src/suppliers/supplier.service';

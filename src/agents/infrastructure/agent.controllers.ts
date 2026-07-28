@@ -1,5 +1,4 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { AgentsRepository } from './agent.repository';
 import { AgentService } from './agent.service';
 
 @Controller()

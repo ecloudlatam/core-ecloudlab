@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AgentsRepository } from './agent.repository';
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
 
 @Injectable()
 export class AgentService {

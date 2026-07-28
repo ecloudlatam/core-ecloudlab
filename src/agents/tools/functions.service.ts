@@ -1,8 +1,6 @@
 import { DoubtService } from 'src/doubt/infraestructure/doubt.service';
-import * as dayjs from 'dayjs';
 import { Injectable, Logger } from '@nestjs/common';
 import { ProductsService } from 'src/products/infrastructure/products.service';
-import { assign } from 'lodash';
 import { CreateProductDto } from 'src/products/dto/create.dto';
 import { CreditService } from 'src/credits/credit.service';
 
@@ -49,7 +47,7 @@ export class FunctionService {
         return this.productService.createListProducts(args.products, appId);
       case 'added-new-doubt':
         // TODO: Integrar con base de datos
-        const { date, product, quantity, amount } = args;
+        const { product, amount } = args;
         return await this.doubtService.create(appId, userId, [
           { name: product, price: amount },
         ]);

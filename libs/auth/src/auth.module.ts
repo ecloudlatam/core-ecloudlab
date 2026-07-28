@@ -4,7 +4,10 @@ import { SupabaseLibModule } from '@app/supabase';
 import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  imports: [SupabaseLibModule, PassportModule.register({defaultStrategy:"api-key"})],
+  imports: [
+    SupabaseLibModule,
+    PassportModule.register({ defaultStrategy: 'api-key' }),
+  ],
   providers: [AuthService],
   exports: [AuthService],
 })

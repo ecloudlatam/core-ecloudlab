@@ -1,4 +1,3 @@
-import { SupabaseService } from '@app/supabase';
 import { Type } from '@google/genai';
 
 export const routerTool = {
@@ -147,11 +146,9 @@ const sendMessage = {
 };
 
 export class ToolService {
-  constructor(private readonly supabase: SupabaseService) {}
+  constructor() {}
 
-  getTool() {
-    const db = this.supabase.getClient();
-  }
+  getTool() {}
 
   getToolsForIntent(intent?: string) {
     const toolMap = {

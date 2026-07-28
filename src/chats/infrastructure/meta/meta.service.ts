@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AwsService } from 'src/shared/aws.service';
-import { pick, assign, omit, get } from 'lodash';
+import { get } from 'lodash';
 import { UsersService } from 'src/users/infrastructure/users.service';
 
 @Injectable()

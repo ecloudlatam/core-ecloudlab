@@ -1,7 +1,6 @@
-import { IsString } from "class-validator";
+import { IsString } from 'class-validator';
 
-
-export class getDoubtsDto{
-    @IsString()
-    name: string
+export class getDoubtsDto {
+  @IsString()
+  name: string;
 }

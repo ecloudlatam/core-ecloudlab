@@ -1,23 +1,31 @@
-import { Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
-import { MessageService } from "./messages.service";
-import { ApiKeyGuard } from "src/guards";
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { MessageService } from './messages.service';
+import { ApiKeyGuard } from 'src/guards';
 
 @Controller()
 @UseGuards(ApiKeyGuard)
-export class MessagesControllers{
-    private readonly logger = new Logger(MessagesControllers.name)
+export class MessagesControllers {
+  private readonly logger = new Logger(MessagesControllers.name);
 
-    constructor(private readonly userService: MessageService ){}
+  constructor(private readonly userService: MessageService) {}
 
-    @Get()
-    async users(){
-        return await this.userService.findAll()
-    }
+  @Get()
+  async users() {
+    return await this.userService.findAll();
+  }
 
-    @Post()
-    async create(@Req() request: any, @Body() createUserDto: any){
-        const app = request['apps']
-        const resp = await this.userService.create(createUserDto, app.id)
-        return resp
-    }
+  @Post()
+  async create(@Req() request: any, @Body() createUserDto: any) {
+    const app = request['apps'];
+    const resp = await this.userService.create(createUserDto, app.id);
+    return resp;
+  }
 }

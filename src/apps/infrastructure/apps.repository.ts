@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseService } from '@app/supabase';
-import { IAppsRepository } from '../domain/iapps.repository';
 
 @Injectable()
 export class AppRepository {

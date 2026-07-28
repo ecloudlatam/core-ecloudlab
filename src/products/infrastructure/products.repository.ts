@@ -1,6 +1,5 @@
-import { SupabaseLibModule, SupabaseService } from '@app/supabase';
-import { Inject, Injectable } from '@nestjs/common';
-import { omit } from 'lodash';
+import { SupabaseService } from '@app/supabase';
+import { Injectable } from '@nestjs/common';
 import { CreateVariantDto } from '../dto/create-variant.dto';
 
 @Injectable()

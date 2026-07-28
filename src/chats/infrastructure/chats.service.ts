@@ -1,7 +1,5 @@
-import { WhatsAppService } from "./service/whatsapp.service";
+import { WhatsAppService } from './service/whatsapp.service';
 
-
-
-export class ChatService{
-    constructor(protected readonly whatsAppService: WhatsAppService){}
+export class ChatService {
+  constructor(protected readonly whatsAppService: WhatsAppService) {}
 }

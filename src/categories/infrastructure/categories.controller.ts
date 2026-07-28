@@ -1,30 +1,34 @@
-import { Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
-import { ApiKeyGuard } from "src/guards";
-import { CategoriesService } from "./categories.service";
-
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiKeyGuard } from 'src/guards';
+import { CategoriesService } from './categories.service';
 
 @Controller()
 @UseGuards(ApiKeyGuard)
-export class CategoriesController{
+export class CategoriesController {
+  private readonly logger = new Logger(CategoriesController.name);
 
-    private readonly logger = new Logger(CategoriesController.name);
+  constructor(private readonly categoriesService: CategoriesService) {}
 
-    constructor(private readonly categoriesService: CategoriesService){}
+  @Get()
+  async findall() {
+    return { ok: true };
+  }
 
-    @Get()
-    async findall(){
-        return {"ok":true}
+  @Post()
+  async create(@Req() request: any, @Body() createCategoriesDto: any) {
+    try {
+      const app = request['apps'];
+      return this.categoriesService.create(createCategoriesDto, app.id);
+    } catch (error) {
+      throw new Error(error);
     }
-
-    @Post()
-    async create(@Req() request: any, @Body() createCategoriesDto: any){
-
-        try {
-            const app = request['apps']
-        return this.categoriesService.create(createCategoriesDto, app.id)
-        } catch (error) {
-            throw new Error(error)
-        }
-       
-    }
+  }
 }

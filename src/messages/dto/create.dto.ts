@@ -1,20 +1,18 @@
-import { IsEmail, IsPhoneNumber, IsString, IsUUID } from "class-validator";
+import { IsEmail, IsPhoneNumber, IsString, IsUUID } from 'class-validator';
 
+export class createUserDto {
+  @IsString()
+  name: string;
 
-export class createUserDto{
+  @IsString()
+  last_name: string;
 
-    @IsString()
-    name: string
+  @IsEmail()
+  email: string;
 
-    @IsString()
-    last_name: string
+  @IsPhoneNumber()
+  reference_id: number;
 
-    @IsEmail()
-    email: string
-
-    @IsPhoneNumber()
-    reference_id: number
-
-    @IsUUID('4')
-    app_id: string
+  @IsUUID('4')
+  app_id: string;
 }

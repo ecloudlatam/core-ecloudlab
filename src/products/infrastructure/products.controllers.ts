@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Logger,
-  Param,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 
 import { ApiKeyGuard } from 'src/guards';
 import { CreateProductDto } from '../dto/create.dto';
@@ -16,8 +7,6 @@ import { ProductsService } from './products.service';
 @Controller()
 @UseGuards(ApiKeyGuard)
 export class ProductsControllers {
-  private readonly logger = new Logger(ProductsControllers.name);
-
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()

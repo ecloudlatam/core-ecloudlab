@@ -3,9 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { SupabaseService } from './supabase.service';
 
 @Module({
-  imports: [
-    ConfigModule, 
-  ],
+  imports: [ConfigModule],
   providers: [SupabaseService],
-  exports: [SupabaseService]})
+  exports: [SupabaseService],
+})
 export class SupabaseLibModule {}

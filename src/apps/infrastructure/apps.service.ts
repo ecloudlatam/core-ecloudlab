@@ -1,5 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { IAppsRepository } from '../domain/iapps.repository';
+import { Injectable } from '@nestjs/common';
 import { CreateAppDto } from '../domain/dtos/create-apps.dto';
 import { AuthService } from 'shared/auth';
 import { AppEntity } from '../domain/apps.entity';

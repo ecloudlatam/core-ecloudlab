@@ -6,7 +6,6 @@ import {
   Min,
   IsArray,
   IsBoolean,
-  IsUUID,
   ValidateNested,
 } from 'class-validator';
 import { CreateVariantDto } from './create-variant.dto';
