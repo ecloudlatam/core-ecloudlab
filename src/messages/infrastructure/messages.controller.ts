@@ -1,20 +1,10 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Logger,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { MessageService } from './messages.service';
 import { ApiKeyGuard } from 'src/guards';
 
 @Controller()
 @UseGuards(ApiKeyGuard)
 export class MessagesControllers {
-  private readonly logger = new Logger(MessagesControllers.name);
-
   constructor(private readonly userService: MessageService) {}
 
   @Get()

@@ -1,6 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ProductsRepository } from './products.repository';
-import { CategoriesRepository } from 'src/categories/infrastructure/categories.repository';
 import { CreateProductDto } from '../dto/create.dto';
 import { GeminiService } from 'src/common/gemini/gemini.service';
 import { omit, isEmpty } from 'lodash';
@@ -9,11 +8,8 @@ import { CreateVariantWithExtraDto } from '../dto/create-variant.dto';
 
 @Injectable()
 export class ProductsService {
-  private readonly logger = new Logger(ProductsService.name);
-
   constructor(
     private readonly productsRepository: ProductsRepository,
-    private readonly categoryRepository: CategoriesRepository,
     private readonly supplierRepository: SuppliersRepository,
     private readonly geminiService: GeminiService,
   ) {}

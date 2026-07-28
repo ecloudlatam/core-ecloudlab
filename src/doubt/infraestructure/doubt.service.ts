@@ -23,6 +23,7 @@ export class DoubtService {
   async create(appId: string, userId: number, payload: any): Promise<any> {
     const payloads = [];
     try {
+      console.log('userId ===', userId);
       for (let index = 0; index < payload.length; index++) {
         const element = payload[index];
         const body = assign({ app_id: appId }, element);

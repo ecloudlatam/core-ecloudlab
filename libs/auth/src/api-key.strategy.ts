@@ -17,7 +17,7 @@ export class ApiKeyStrategy extends PassportStrategy(
     );
   }
 
-  async validate(req: any, apiKey: string): Promise<any> {
+  async validate(_req: any, apiKey: string): Promise<any> {
     // 1. Obtenemos el hash SHA-256 del token que envió el cliente
     const hashEntrante = crypto
       .createHash('sha256')
