@@ -54,4 +54,50 @@ export class SessionManagerService implements OnModuleInit, OnModuleDestroy {
       throw new Error(error);
     }
   }
+
+  // Guardar el último intent usado para evitar re-ejecutar el router
+  async setLastIntent(
+    appId: string,
+    botId: number,
+    userId: number,
+    intent: string,
+  ) {
+    try {
+      const key = `intent:${appId}:${botId}:${userId}`;
+      await this.redisClient.set(key, intent, { EX: 1000 }); // Expira en 1000 segundos
+      this.logger.debug(`✅ Intent guardado en Redis: ${intent}`);
+    } catch (error) {
+      this.logger.error(`Error guardando intent en Redis: ${error.message}`);
+    }
+  }
+
+  // Obtener el último intent usado
+  async getLastIntent(
+    appId: string,
+    botId: number,
+    userId: number,
+  ): Promise<string | null> {
+    try {
+      const key = `intent:${appId}:${botId}:${userId}`;
+      const intent = await this.redisClient.get(key);
+      if (intent) {
+        this.logger.debug(`♻️ Intent recuperado de Redis: ${intent}`);
+      }
+      return intent;
+    } catch (error) {
+      this.logger.error(`Error obteniendo intent de Redis: ${error.message}`);
+      return null;
+    }
+  }
+
+  // Limpiar el intent cuando se requiera (ej: cambio de contexto explícito)
+  async clearLastIntent(appId: string, botId: number, userId: number) {
+    try {
+      const key = `intent:${appId}:${botId}:${userId}`;
+      await this.redisClient.del(key);
+      this.logger.debug(`🗑️ Intent limpiado de Redis`);
+    } catch (error) {
+      this.logger.error(`Error limpiando intent de Redis: ${error.message}`);
+    }
+  }
 }

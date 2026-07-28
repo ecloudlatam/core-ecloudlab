@@ -78,6 +78,8 @@ export class WhatsAppService {
       );
 
       if (message.type == 'interactive') {
+        // Cuando el usuario selecciona del menú, limpiar el intent anterior
+        await this.sessionManagerService.clearLastIntent(appId, botId, userId);
         return await this.main(message, appId, userId, botId, history);
       }
 
@@ -171,6 +173,8 @@ export class WhatsAppService {
     return [{ text }];
   }
 
+  private async session() {}
+
   private async main(
     messages: any,
     appId: string,
@@ -185,14 +189,42 @@ export class WhatsAppService {
 
       const config = agentPrincipal.config || {};
 
-      const routeInfo = await this.geminiService.agentRouter(
-        history,
-        messages.parts,
+      // 🚀 OPTIMIZACIÓN: Recuperar el último intent de Redis
+      const cachedIntent = await this.sessionManagerService.getLastIntent(
+        appId,
+        botId,
         userId,
-        agentPrincipal,
-        config,
       );
-      const { intent } = routeInfo;
+
+      let routeInfo;
+      let intent;
+
+      if (cachedIntent) {
+        // ♻️ Reutilizar el intent anterior (ahorra 1 llamada al router)
+        intent = cachedIntent;
+        routeInfo = { intent, confidence: 1.0, extractedData: {} };
+        this.logger.log(`♻️ Intent reutilizado desde Redis: ${intent}`);
+      } else {
+        // 🔀 Primera interacción: ejecutar router para clasificar
+        routeInfo = await this.geminiService.agentRouter(
+          history,
+          messages.parts,
+          userId,
+          agentPrincipal,
+          config,
+        );
+        intent = routeInfo.intent;
+        
+        // Guardar el intent en Redis para próximas interacciones
+        await this.sessionManagerService.setLastIntent(
+          appId,
+          botId,
+          userId,
+          intent,
+        );
+        this.logger.log(`🔀 Router ejecutado - Intent guardado: ${intent}`);
+      }
+
       console.log('intent= ===', intent);
       const agentComplements = await this.agentService.findAgentTools(intent);
       const values = agentComplements.data;
