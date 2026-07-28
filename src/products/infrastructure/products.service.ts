@@ -58,7 +58,7 @@ export class ProductsService {
         price_buy: data.price_buy,
         unit_type: data.unit_type,
         price_sell: data.price_sell,
-        tax_rate: data.tax_rate,
+        tax_rate: Number(data.tax_rate) / 100,
         image_url: data.image_url || '',
       };
       await this.productsRepository.createProductPrices(product);
