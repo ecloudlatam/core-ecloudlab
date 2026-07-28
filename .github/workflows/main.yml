@@ -40,6 +40,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # 🟢 PASO AGREGADO: Si el script la construyó con otro nombre (ej. whatsapp-ecommerce)
+      - name: Tag Docker image
+        run: |
+          docker tag whatsapp-ecommerce edrians/whatsapp-ecommerce:v1
+
       - name: Push Docker image to Docker Hub
         run: |
           docker push edrians/whatsapp-ecommerce:v1
