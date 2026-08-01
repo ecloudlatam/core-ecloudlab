@@ -17,6 +17,8 @@ import { UserModule } from 'src/users/user.module';
 import { UsersService } from 'src/users/infrastructure/users.service';
 import { CreditModule } from 'src/credits/credit.module';
 import { CreditService } from 'src/credits/credit.service';
+import { OrderService } from 'src/orders/orders.service';
+import { OrderModule } from 'src/orders/orders.module';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { CreditService } from 'src/credits/credit.service';
     AgentModule,
     MessageModule,
     UserModule,
+    OrderModule,
   ],
   providers: [
     VercelGatewayService,
@@ -39,6 +42,7 @@ import { CreditService } from 'src/credits/credit.service';
     MetaService,
     ToolService,
     UsersService,
+    OrderService,
   ],
   controllers: [ChatsController],
   exports: [],

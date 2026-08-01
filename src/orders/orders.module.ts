@@ -6,9 +6,9 @@ import { SupabaseLibModule } from '@app/supabase';
 import { AuthModule } from '@app/auth';
 
 @Module({
-  controllers: [OrderController],
   providers: [OrdersRepository, OrderService],
-  exports: [OrderService],
+  exports: [OrderService, OrdersRepository],
+  controllers: [OrderController],
   imports: [SupabaseLibModule, AuthModule],
 })
 export class OrderModule {}
