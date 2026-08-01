@@ -10,6 +10,7 @@ import { ClientsModule } from './clients/clients.module';
 import { AgentModule } from './agents/agent.module';
 import { MessageModule } from './messages/messages.module';
 import { HealthController } from './health/health.controller';
+import { OrderModule } from './orders/orders.module';
 
 @Module({
   controllers: [HealthController],
@@ -23,6 +24,7 @@ import { HealthController } from './health/health.controller';
     AgentModule,
     DoubtModule,
     MessageModule,
+    OrderModule,
     RouterModule.register([
       {
         path: 'apps',
@@ -59,6 +61,10 @@ import { HealthController } from './health/health.controller';
       {
         path: 'messages',
         module: MessageModule,
+      },
+      {
+        path: 'orders',
+        module: OrderModule,
       },
     ]),
   ],

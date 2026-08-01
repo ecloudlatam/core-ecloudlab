@@ -1,0 +1,16 @@
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { ApiKeyGuard } from 'src/guards';
+import { OrderService } from './orders.service';
+import { OrderCreateDto } from './order-create.dto';
+
+@Controller('')
+@UseGuards(ApiKeyGuard)
+export class OrderController {
+  constructor(private readonly orderService: OrderService) {}
+  @Post()
+  async create(@Req() request: any, @Body() orderCreateDto: OrderCreateDto) {
+    const app = request['apps'];
+    const resp = await this.orderService.create(orderCreateDto, app.id);
+    return resp;
+  }
+}

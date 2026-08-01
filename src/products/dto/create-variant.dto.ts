@@ -2,10 +2,14 @@ import { IsString, IsNumber, IsOptional, Min, IsUUID } from 'class-validator';
 
 export class CreateVariantDto {
   @IsString()
-  sku: string;
+  barcode: string;
 
   @IsString()
   unit_type: string;
+
+  @IsNumber()
+  @IsOptional()
+  unit_quantity: number = 0;
 
   @IsString()
   stock: string;
@@ -27,8 +31,15 @@ export class CreateVariantDto {
   image_url?: string;
 }
 
-// 2. Nueva clase heredada en el mismo archivo
-export class CreateVariantWithExtraDto extends CreateVariantDto {
+// 2. Extender agregando el nuevo campo
+export type CreateVariantWithExtraDto = Omit<CreateVariantDto, 'barcode'> & {
+  product_id?: string;
+};
+
+export class CreateProductBarcodeDto {
+  @IsString()
+  barcode: string;
+
   @IsUUID('4', { message: 'El id de la categoría debe ser un UUID v4 válido' })
-  product_id?: string; // Tu nuevo campo adicional
+  product_variant_id: string;
 }

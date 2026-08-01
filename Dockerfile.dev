@@ -4,9 +4,13 @@ FROM node:24-alpine
 # Habilitar pnpm
 RUN corepack enable
 
+# Configurar CI para evitar prompts interactivos
+ENV CI=true
+
 WORKDIR /app
 
-COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copiar archivos de configuración incluyendo .npmrc
+COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
 RUN pnpm install
 

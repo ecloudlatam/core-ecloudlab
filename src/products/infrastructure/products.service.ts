@@ -4,7 +4,6 @@ import { CreateProductDto } from '../dto/create.dto';
 import { GeminiService } from 'src/common/gemini/gemini.service';
 import { omit, isEmpty } from 'lodash';
 import { SuppliersRepository } from 'src/suppliers/supplier.repository';
-import { CreateVariantWithExtraDto } from '../dto/create-variant.dto';
 
 @Injectable()
 export class ProductsService {
@@ -54,7 +53,7 @@ export class ProductsService {
       const data = products.variants[index];
       const product = {
         product_id: id,
-        sku: data.sku,
+        unit_quantity: data.unit_quantity,
         stock: data.stock,
         price_buy: data.price_buy,
         unit_type: data.unit_type,
@@ -62,7 +61,18 @@ export class ProductsService {
         tax_rate: Number(data.tax_rate) / 100,
         image_url: data.image_url || '',
       };
-      await this.productsRepository.createProductPrices(product);
+
+      const variantId = await this.productsRepository.findProductBarCode(
+        data.barcode,
+      );
+
+      if (!isEmpty(variantId)) continue;
+
+      const prts = await this.productsRepository.createProductVariants(product);
+      await this.productsRepository.createProductBarCode({
+        barcode: data.barcode,
+        product_variant_id: prts.data[0].id,
+      });
     }
 
     // 3. Limpiar los productos omitiendo el 'embedding'
@@ -115,7 +125,21 @@ export class ProductsService {
     }
   }
 
-  async insert(product: CreateVariantWithExtraDto) {
-    return await this.productsRepository.createProductPrices(product);
+  async findBarCode(barcodes: any) {
+    const { data } =
+      await this.productsRepository.findProductBarCodes(barcodes);
+
+    if (isEmpty(data))
+      return {
+        succes: 'true',
+        message: 'no contenemos los productos de los codigos',
+        barcodes,
+      };
+
+    return data;
   }
+
+  // async insert(product: CreateVariantWithExtraDto) {
+  //   return await this.productsRepository.createProductPrices(product);
+  // }
 }

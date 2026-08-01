@@ -8,9 +8,6 @@ export class udpateProductVariantDto {
   sku: string;
 
   @IsString()
-  stock: string;
-
-  @IsString()
   @IsOptional()
   image_url?: string;
 

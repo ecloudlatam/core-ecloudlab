@@ -26,6 +26,12 @@ export class ProductsControllers {
     } catch (error) {}
   }
 
+  @Post('barcodes')
+  async findBarCode(@Body() body: any) {
+    const { barcodes } = body;
+    return this.productsService.findBarCode(barcodes);
+  }
+
   @Post('search')
   async findOne(@Body() body: any) {
     try {
