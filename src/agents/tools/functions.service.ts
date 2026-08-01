@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ProductsService } from 'src/products/infrastructure/products.service';
 // import { CreateProductDto } from 'src/products/dto/create.dto';
 import { CreditService } from 'src/credits/credit.service';
+import { OrderService } from 'src/orders/orders.service';
 
 type ApiResponse<T = void> = {
   success: boolean;
@@ -15,6 +16,7 @@ export class FunctionService {
     private readonly doubtService: DoubtService,
     private readonly productService: ProductsService,
     private readonly creditService: CreditService,
+    private readonly orderService: OrderService,
   ) {}
   protected readonly logger = new Logger(FunctionService.name);
 
@@ -33,18 +35,10 @@ export class FunctionService {
         return await this.productService.findAll();
       case 'product_find_one':
         return await this.productService.searchProducts(args.name, args.type);
-      // case 'product_register':
-      //   const data = {
-      //     name: args.name,
-      //     price: args.price,
-      //     cant: args.cant,
-      //     supplier: args.supplier,
-      //     variants: JSON.parse(args.variants),
-      //   } as CreateProductDto;
-      //   console.log('data ===', data);
-      // return await this.productService.create(data, appId);
       case 'products_array_register':
         return this.productService.createListProducts(args.products, appId);
+      case 'order_create':
+        return this.orderService.createList(args.products, appId);
       case 'added-new-doubt':
         // TODO: Integrar con base de datos
         const { product, amount } = args;

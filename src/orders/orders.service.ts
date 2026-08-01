@@ -22,4 +22,20 @@ export class OrderService {
     const orderDetails = await this.ordersRepository.createOrderDetails(items);
     return orderDetails;
   }
+
+  async createList(products: any, appId: string): Promise<any> {
+    const resp = [];
+    try {
+      for (let index = 0; index < products.length; index++) {
+        const element = products[index];
+        const item = JSON.parse(element);
+        const items = await this.create(item, appId);
+
+        resp.push(items);
+      }
+      return { success: true, message: 'crearon los registros', data: resp };
+    } catch (error) {
+      return { success: false, message: 'hubo errores para registrar datos' };
+    }
+  }
 }
