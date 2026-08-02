@@ -113,6 +113,7 @@ export class ProductsService {
   async createListProducts(products: any, appId: string): Promise<any> {
     const resp = [];
     try {
+      console.log('products', products);
       for (let index = 0; index < products.length; index++) {
         const element = products[index];
         const item = JSON.parse(element);

@@ -26,6 +26,7 @@ export class FunctionService {
     appId: string,
     userId: number,
   ): Promise<ApiResponse<any>> {
+    console.log('executeTools,', functionName);
     switch (functionName) {
       case 'credit_get_all':
         return await this.creditService.findAll();
