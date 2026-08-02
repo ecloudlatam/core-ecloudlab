@@ -72,6 +72,7 @@ export class ProductsService {
       await this.productsRepository.createProductBarCode({
         barcode: data.barcode,
         product_variant_id: prts.data[0].id,
+        img_barcode: data.img_barcode || '',
       });
     }
 
@@ -126,20 +127,23 @@ export class ProductsService {
   }
 
   async findBarCode(barcodes: any) {
-    const { data } =
-      await this.productsRepository.findProductBarCodes(barcodes);
+    try {
+      const { data } =
+        await this.productsRepository.findProductBarCodes(barcodes);
 
-    if (isEmpty(data))
+      if (isEmpty(data))
+        return {
+          success: false,
+          message: 'no contenemos los productos de los codigos',
+        };
+
       return {
-        succes: 'true',
-        message: 'no contenemos los productos de los codigos',
-        barcodes,
+        success: true,
+        message: 'resumen de los codigos de barra de los productos',
+        data,
       };
-
-    return data;
+    } catch (error) {
+      return { success: false, message: 'hubo errores para registrar datos' };
+    }
   }
-
-  // async insert(product: CreateVariantWithExtraDto) {
-  //   return await this.productsRepository.createProductPrices(product);
-  // }
 }

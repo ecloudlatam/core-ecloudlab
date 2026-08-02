@@ -29,6 +29,10 @@ export class CreateVariantDto {
   @IsString()
   @IsOptional()
   image_url?: string;
+
+  @IsString()
+  @IsOptional()
+  img_barcode?: string;
 }
 
 // 2. Extender agregando el nuevo campo
@@ -39,6 +43,10 @@ export type CreateVariantWithExtraDto = Omit<CreateVariantDto, 'barcode'> & {
 export class CreateProductBarcodeDto {
   @IsString()
   barcode: string;
+
+  @IsString()
+  @IsOptional()
+  img_barcode: string;
 
   @IsUUID('4', { message: 'El id de la categoría debe ser un UUID v4 válido' })
   product_variant_id: string;

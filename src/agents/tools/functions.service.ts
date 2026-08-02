@@ -36,9 +36,14 @@ export class FunctionService {
       case 'product_find_one':
         return await this.productService.searchProducts(args.name, args.type);
       case 'products_array_register':
-        return this.productService.createListProducts(args.products, appId);
+        return await this.productService.createListProducts(
+          args.products,
+          appId,
+        );
       case 'order_create':
-        return this.orderService.createList(args.products, appId);
+        return await this.orderService.createList(args.products, appId);
+      case 'barcodes_find':
+        return await this.productService.findBarCode(JSON.parse(args.barcodes));
       case 'added-new-doubt':
         // TODO: Integrar con base de datos
         const { product, amount } = args;
