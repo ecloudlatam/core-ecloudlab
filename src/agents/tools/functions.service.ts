@@ -51,9 +51,9 @@ export class FunctionService {
         return await this.doubtService.create(appId, userId, [
           { name: product, price: amount },
         ]);
-      case 'generate_barcode':
-        console.log('args ===', args);
-        return this.orderService.generateInternalBarcode(args.product);
+      // case 'generate_barcode':
+      // console.log('args ===', args);
+      // return this.orderService.generateInternalBarcode(args.product);
       case 'check-debt':
         return await this.doubtService.findAll(appId);
       default:

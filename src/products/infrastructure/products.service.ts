@@ -51,6 +51,8 @@ export class ProductsService {
 
     for (let index = 0; index < products.variants.length; index++) {
       const data = products.variants[index];
+
+      console.log('variants ===', data);
       const product = {
         product_id: id,
         unit_quantity: data.unit_quantity,
@@ -70,7 +72,7 @@ export class ProductsService {
 
       const prts = await this.productsRepository.createProductVariants(product);
       await this.productsRepository.createProductBarCode({
-        barcode: data.barcode,
+        barcode: data.barcode || this.generateInternalBarcode(),
         product_variant_id: prts.data[0].id,
         img_barcode: data.img_barcode || '',
       });
@@ -146,5 +148,10 @@ export class ProductsService {
     } catch (error) {
       return { success: false, message: 'hubo errores para registrar datos' };
     }
+  }
+
+  generateInternalBarcode() {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    return randomSuffix.toString();
   }
 }
