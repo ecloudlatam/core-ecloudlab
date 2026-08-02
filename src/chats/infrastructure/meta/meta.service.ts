@@ -272,6 +272,11 @@ export class MetaService {
                         title: 'Productos',
                         description: 'Crear, buscar y eliminar',
                       },
+                      {
+                        id: 'main_menu_ventas',
+                        title: 'Ventas',
+                        description: 'Registar ordenes de venta',
+                      },
                     ],
                   },
                 ]
