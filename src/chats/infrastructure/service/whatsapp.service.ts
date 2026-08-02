@@ -231,6 +231,8 @@ export class WhatsAppService {
         );
       }
 
+      if (intent === 'general_chat') intent = routerPrincipal;
+
       const agentComplements = await this.agentService.findAgentTools(intent);
       const values = agentComplements.data;
 
