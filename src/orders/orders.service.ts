@@ -40,8 +40,7 @@ export class OrderService {
 
       return {
         success: true,
-        message: `el codigo es  INT-${cleanName}-${randomSuffix}`,
-        code: `INT-${cleanName}-${randomSuffix}`,
+        data: `el codigo del producto ${productName} INT-${cleanName}-${randomSuffix}`,
       };
     } catch (error) {
       return {

@@ -213,6 +213,8 @@ export class GeminiService implements OnModuleInit {
 
         console.log('toolResponse', toolResponse);
 
+        console.log('name', toolResponse);
+
         // Segunda llamada: enviar resultado de la herramienta
         resp = await chatSession.sendMessage({
           message: [
@@ -225,6 +227,8 @@ export class GeminiService implements OnModuleInit {
           ],
         });
       }
+
+      console.log('resp', resp);
 
       // Extraer el mensaje de respuesta y asegurar que no esté vacío
       const responseMessage =
