@@ -25,6 +25,7 @@ export class OrderService {
 
   generateInternalBarcode(productName: string) {
     try {
+      console.log('productName ===', productName);
       const cleanName = productName
         .toLowerCase()
         .normalize('NFD')
