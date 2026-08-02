@@ -170,27 +170,6 @@ export class GeminiService implements OnModuleInit {
               functionDeclarations: tools,
             },
           ],
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              message: {
-                type: Type.STRING,
-                description:
-                  'El mensaje de texto amigable que se le enviará al cliente por WhatsApp.',
-              },
-              type: {
-                type: Type.STRING,
-                description:
-                  'contenido de los mensajes [text, img, docs, locations]',
-              },
-              imageUrl: {
-                type: Type.STRING,
-                description:
-                  'La URL pública o ID de la imagen del producto si el cliente solicitó ver un producto o si la herramienta la devolvió. De lo contrario, dejar vacío o null.',
-              },
-            },
-            required: ['message', 'type'],
-          },
         },
         history,
       });
@@ -200,10 +179,13 @@ export class GeminiService implements OnModuleInit {
         message: messageInput,
       });
 
-      // Si hay function calls, ejecutarlas
-      const functionCalls = resp.functionCalls ?? [];
-      if (functionCalls.length > 0) {
-        const { name, args } = functionCalls[0];
+      const toolsUsed: string[] = [];
+
+      // 2. CAMBIAMOS IF POR WHILE para manejar llamadas encadenadas
+      while (resp.functionCalls && resp.functionCalls.length > 0) {
+        const { name, args } = resp.functionCalls[0];
+        toolsUsed.push(name);
+
         const toolResponse = await this.functions.executeTools(
           name,
           args,
@@ -211,11 +193,7 @@ export class GeminiService implements OnModuleInit {
           userId,
         );
 
-        console.log('toolResponse', toolResponse);
-
-        console.log('name', toolResponse);
-
-        // Segunda llamada: enviar resultado de la herramienta
+        // Segunda llamada (o subsiguientes): enviar resultado de la herramienta
         resp = await chatSession.sendMessage({
           message: [
             {
@@ -230,9 +208,10 @@ export class GeminiService implements OnModuleInit {
 
       console.log('resp', resp);
 
-      // Extraer el mensaje de respuesta y asegurar que no esté vacío
-      const responseMessage =
-        resp?.text ?? resp?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      // 3. Extracción segura del texto final de Gemini
+      const responseMessage = resp?.text ?? '';
+
+      console.log('tools', toolsUsed);
 
       return {
         message:
@@ -241,7 +220,7 @@ export class GeminiService implements OnModuleInit {
         role: resp.candidates[0].content.role,
         responseId: resp?.responseId,
         intent: routeInfo?.intent,
-        toolsUsed: functionCalls.map((fc) => fc.name),
+        toolsUsed,
       };
     } catch (error) {
       console.log('error', error);
