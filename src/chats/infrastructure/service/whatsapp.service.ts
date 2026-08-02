@@ -192,6 +192,8 @@ export class WhatsAppService {
       const routerPrincipal = success ? 'router_vendedor' : 'router_client';
       const agentPrincipal = await this.agentService.findOne(routerPrincipal);
 
+      console.log('agentPrincipal ====', agentPrincipal);
+
       // const config =
       // agentPrincipal.pivot_agents_tools(({ tools }) => tools.name) || [];
 
@@ -201,6 +203,8 @@ export class WhatsAppService {
         botId,
         userId,
       );
+
+      console.log('cachedIntent ====', cachedIntent);
 
       let routeInfo;
       let intent;

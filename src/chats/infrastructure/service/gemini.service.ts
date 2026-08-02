@@ -48,7 +48,7 @@ export class GeminiService implements OnModuleInit {
                     required: ['intent', 'confidence'],
                     properties: {
                       intent: {
-                        enum: agent,
+                        enum: agent.config,
                         type: Type.STRING,
                       },
                       confidence: {
