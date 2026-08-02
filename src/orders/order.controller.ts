@@ -13,4 +13,11 @@ export class OrderController {
     const resp = await this.orderService.create(orderCreateDto, app.id);
     return resp;
   }
+
+  @Post('generate')
+  generate(@Req() @Body() body: any) {
+    const { product } = body;
+    const resp = this.orderService.generateInternalBarcode(product);
+    return resp;
+  }
 }

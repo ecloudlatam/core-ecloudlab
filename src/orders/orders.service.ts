@@ -40,11 +40,14 @@ export class OrderService {
 
       return {
         success: true,
-        message: `e crel el codigo con  INT-${cleanName}-${randomSuffix}`,
+        message: `el codigo es  INT-${cleanName}-${randomSuffix}`,
         code: `INT-${cleanName}-${randomSuffix}`,
       };
     } catch (error) {
-      console.log('error ==', error);
+      return {
+        success: false,
+        message: 'error en crea el producto',
+      };
     }
   }
 

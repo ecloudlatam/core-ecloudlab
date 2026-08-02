@@ -211,6 +211,8 @@ export class GeminiService implements OnModuleInit {
           userId,
         );
 
+        console.log('toolResponse', toolResponse);
+
         // Segunda llamada: enviar resultado de la herramienta
         resp = await chatSession.sendMessage({
           message: [
