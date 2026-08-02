@@ -5,7 +5,6 @@ import { GeminiService } from './infrastructure/service/gemini.service';
 import { VercelGatewayService } from './infrastructure/service/vercel.service';
 import { SessionManagerService } from './infrastructure/service/session-redis.service';
 import { AwsModule } from 'src/shared/aws.module';
-import { ToolService } from '../agents/tools/parameters.service';
 import { DoubtService } from 'src/doubt/infraestructure/doubt.service';
 import { DoubtModule } from 'src/doubt/doubt.module';
 import { FunctionService } from '../agents/tools/functions.service';
@@ -40,7 +39,6 @@ import { OrderModule } from 'src/orders/orders.module';
     DoubtService,
     FunctionService,
     MetaService,
-    ToolService,
     UsersService,
     OrderService,
   ],

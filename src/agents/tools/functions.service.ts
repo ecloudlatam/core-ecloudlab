@@ -43,7 +43,6 @@ export class FunctionService {
       case 'order_create':
         return await this.orderService.createList(args.products, appId);
       case 'barcodes_find':
-        console.log('barcodes ===', args.barcodes);
         return await this.productService.findBarCode(args.barcodes);
       case 'added-new-doubt':
         // TODO: Integrar con base de datos
@@ -51,6 +50,8 @@ export class FunctionService {
         return await this.doubtService.create(appId, userId, [
           { name: product, price: amount },
         ]);
+      case 'generate_barcode':
+        return this.orderService.generateInternalBarcode(args.product);
       case 'check-debt':
         return await this.doubtService.findAll(appId);
       default:

@@ -25,7 +25,7 @@ export class GeminiService implements OnModuleInit {
     config: any,
   ) {
     try {
-      console.log('agent ===', agent, userId);
+      console.log('agent ===', agent, userId, config);
       const { model, prompt } = agent;
 
       const promptTemplate = PromptTemplate.fromTemplate(prompt);
@@ -39,7 +39,32 @@ export class GeminiService implements OnModuleInit {
           systemInstruction,
           tools: [
             {
-              functionDeclarations: [config],
+              functionDeclarations: [
+                {
+                  name: 'route-intent',
+                  description:
+                    '"Identifica la intención del usuario y determina qué agente especializado debe manejar la solicitud',
+                  parameters: {
+                    type: Type.OBJECT,
+                    required: ['intent', 'confidence'],
+                    properties: {
+                      intent: {
+                        enum: config,
+                        type: Type.STRING,
+                      },
+                      confidence: {
+                        type: Type.NUMBER,
+                        description: 'Nivel de confianza de la intención (0-1)',
+                      },
+                      extractedData: {
+                        type: Type.OBJECT,
+                        description:
+                          'Datos extraídos del mensaje del usuario (productos, fechas, cantidades, etc.)',
+                      },
+                    },
+                  },
+                },
+              ],
             },
           ],
         },

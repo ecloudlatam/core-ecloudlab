@@ -7,7 +7,7 @@ export class AgentService {
   constructor(private readonly agentRepository: AgentsRepository) {}
 
   async findOne(slug: string) {
-    return this.agentRepository.fndOne(slug);
+    return await this.agentRepository.fndOne(slug);
   }
 
   async findAgentTools(agent: any) {

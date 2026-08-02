@@ -23,6 +23,20 @@ export class OrderService {
     return orderDetails;
   }
 
+  generateInternalBarcode(productName: string) {
+    const cleanName = productName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-0]/g, '')
+      .substring(0, 6)
+      .toUpperCase();
+
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+
+    return { success: true, code: `INT-${cleanName}-${randomSuffix}` };
+  }
+
   async createList(products: any, appId: string): Promise<any> {
     const resp = [];
     try {
@@ -33,7 +47,11 @@ export class OrderService {
 
         resp.push(items);
       }
-      return { success: true, message: 'crearon los registros', data: resp };
+      return {
+        success: true,
+        message: 'crearon los registros',
+        data: resp.map((item) => item).join(','),
+      };
     } catch (error) {
       return { success: false, message: 'hubo errores para registrar datos' };
     }

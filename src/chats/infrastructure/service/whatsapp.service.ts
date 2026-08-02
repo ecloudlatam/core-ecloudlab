@@ -190,9 +190,9 @@ export class WhatsAppService {
     try {
       const { success = false } = await this.useService.findOne(userId);
       const routerPrincipal = success ? 'router_vendedor' : 'router_client';
-      const agentPrincipal = await this.agentService.findOne(routerPrincipal);
+      const agentPrincipal = await this.agentService.findExec(routerPrincipal);
 
-      const config = agentPrincipal.config || {};
+      const config = agentPrincipal.map(({ name }) => name) || [];
 
       // 🚀 OPTIMIZACIÓN: Recuperar el último intent de Redis
       const cachedIntent = await this.sessionManagerService.getLastIntent(
@@ -205,10 +205,8 @@ export class WhatsAppService {
       let intent;
 
       if (cachedIntent) {
-        // ♻️ Reutilizar el intent anterior (ahorra 1 llamada al router)
         intent = cachedIntent;
         routeInfo = { intent, confidence: 1.0, extractedData: {} };
-        this.logger.log(`♻️ Intent reutilizado desde Redis: ${intent}`);
       } else {
         // 🔀 Primera interacción: ejecutar router para clasificar
         routeInfo = await this.geminiService.agentRouter(
@@ -227,7 +225,6 @@ export class WhatsAppService {
           userId,
           intent,
         );
-        this.logger.log(`🔀 Router ejecutado - Intent guardado: ${intent}`);
       }
 
       const agentComplements = await this.agentService.findAgentTools(intent);
