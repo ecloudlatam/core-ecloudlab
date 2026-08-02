@@ -24,17 +24,27 @@ export class OrderService {
   }
 
   generateInternalBarcode(productName: string) {
-    const cleanName = productName
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-0]/g, '')
-      .substring(0, 6)
-      .toUpperCase();
+    try {
+      const cleanName = productName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-0]/g, '')
+        .substring(0, 6)
+        .toUpperCase();
 
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
 
-    return { success: true, code: `INT-${cleanName}-${randomSuffix}` };
+      console.log('cleanName', cleanName);
+
+      return {
+        success: true,
+        message: `e crel el codigo con  INT-${cleanName}-${randomSuffix}`,
+        code: `INT-${cleanName}-${randomSuffix}`,
+      };
+    } catch (error) {
+      console.log('error ==', error);
+    }
   }
 
   async createList(products: any, appId: string): Promise<any> {
