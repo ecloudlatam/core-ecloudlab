@@ -235,7 +235,9 @@ export class GeminiService implements OnModuleInit {
         resp?.text ?? resp?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 
       return {
-        message: responseMessage.trim() || 'Operación completada exitosamente',
+        message:
+          responseMessage.trim() ||
+          'no se logre comprender, porfavor puedes volver a indicarme gracias',
         role: resp.candidates[0].content.role,
         responseId: resp?.responseId,
         intent: routeInfo?.intent,
