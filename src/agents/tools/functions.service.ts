@@ -43,6 +43,7 @@ export class FunctionService {
       case 'order_create':
         return await this.orderService.createList(args.products, appId);
       case 'barcodes_find':
+        console.log('barcodes ===', args.barcodes);
         return await this.productService.findBarCode(JSON.parse(args.barcodes));
       case 'added-new-doubt':
         // TODO: Integrar con base de datos
