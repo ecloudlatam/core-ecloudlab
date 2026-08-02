@@ -17,7 +17,21 @@ export class AgentsRepository {
   async fndOne(slug: string) {
     try {
       const db = this.supabaseService.getClient();
-      const { data } = await db.from('agents').select().eq('slug', slug);
+      const { data } = await db
+        .from('agents')
+        .select(
+          `
+      *,
+      pivot_agents_tools (
+        tools (
+          id,
+          name,
+          description
+        )
+      )
+    `,
+        )
+        .eq('slug', slug);
       return head(data) ?? {};
     } catch (error) {}
   }

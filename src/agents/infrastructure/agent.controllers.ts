@@ -7,7 +7,7 @@ export class AgentsControllers {
 
   @Get(':slug')
   async findOne(@Param('slug') slug: string) {
-    const agent = this.agentService.findExec(slug);
+    const agent = this.agentService.findOne(slug);
     return agent;
   }
 }
