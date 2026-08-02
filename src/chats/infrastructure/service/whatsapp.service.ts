@@ -192,8 +192,8 @@ export class WhatsAppService {
       const routerPrincipal = success ? 'router_vendedor' : 'router_client';
       const agentPrincipal = await this.agentService.findOne(routerPrincipal);
 
-      const config =
-        agentPrincipal.pivot_agents_tools(({ tools }) => tools.name) || [];
+      // const config =
+      // agentPrincipal.pivot_agents_tools(({ tools }) => tools.name) || [];
 
       // 🚀 OPTIMIZACIÓN: Recuperar el último intent de Redis
       const cachedIntent = await this.sessionManagerService.getLastIntent(
@@ -215,7 +215,6 @@ export class WhatsAppService {
           messages.parts,
           userId,
           agentPrincipal,
-          config,
         );
         intent = routeInfo.intent;
 

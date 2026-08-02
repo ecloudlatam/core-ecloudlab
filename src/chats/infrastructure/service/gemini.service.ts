@@ -22,10 +22,9 @@ export class GeminiService implements OnModuleInit {
     messageInput: any,
     userId: number,
     agent: any,
-    config: any,
   ) {
     try {
-      console.log('agent ===', agent, userId, config);
+      console.log('agent ===', agent, userId);
       const { model, prompt } = agent;
 
       const promptTemplate = PromptTemplate.fromTemplate(prompt);
@@ -49,7 +48,7 @@ export class GeminiService implements OnModuleInit {
                     required: ['intent', 'confidence'],
                     properties: {
                       intent: {
-                        enum: config,
+                        enum: agent,
                         type: Type.STRING,
                       },
                       confidence: {
