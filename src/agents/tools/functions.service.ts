@@ -41,6 +41,8 @@ export class FunctionService {
           args.products,
           appId,
         );
+      case 'orders_today':
+        return await this.orderService.orderTotal()
       case 'order_create':
         return await this.orderService.createList(args.products, appId);
       case 'barcodes_find':

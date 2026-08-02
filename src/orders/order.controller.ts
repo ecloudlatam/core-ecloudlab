@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards, Get } from '@nestjs/common';
 import { ApiKeyGuard } from 'src/guards';
 import { OrderService } from './orders.service';
 import { OrderCreateDto } from './order-create.dto';
@@ -19,5 +19,11 @@ export class OrderController {
     const { product } = body;
     const resp = this.orderService.generateInternalBarcode(product);
     return resp;
+  }
+
+  @Get('total')
+  async total() {
+    const resp = await this.orderService.orderTotal()
+    return resp
   }
 }

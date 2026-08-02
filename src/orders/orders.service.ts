@@ -69,4 +69,25 @@ export class OrderService {
       return { success: false, message: 'hubo errores para registrar datos' };
     }
   }
+
+  async orderTotal(){
+    try {
+
+   const resp = await this.ordersRepository.getOrdersToday()
+      return {
+        success: true,
+        message: 'ventas realizadas de hoy',
+        data: {
+          totalSalesToday: resp.totalSalesToday,
+          totalCostToday : resp.totalCostToday,
+          totalProfitToday:  resp.totalProfitToday,
+          totalOrders: resp.totalOrders,
+          orders: resp.orders.map((item) => item).join('')
+        }
+      };
+    } catch (error) {
+            return { success: false, message: 'hubo errores para registrar datos' };
+
+    }
+  }
 }

@@ -277,6 +277,11 @@ export class MetaService {
                         title: 'Ventas',
                         description: 'Registar ordenes de venta',
                       },
+                      {
+                        id: 'main_menu_ganancias',
+                        title: 'Ganancias',
+                        description: 'Consultar ganancias',
+                      }
                     ],
                   },
                 ]
