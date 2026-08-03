@@ -253,21 +253,6 @@ export class MetaService {
                     title: 'Administracion',
                     rows: [
                       {
-                        id: 'main_menu_mis_deudas',
-                        title: 'Mis Deudas',
-                        description: 'Cuentas por pagar',
-                      },
-                      {
-                        id: 'main_menu_fiar',
-                        title: 'Cuentas Fiadas',
-                        description: 'Buscar, registrar y gestionar',
-                      },
-                      {
-                        id: 'main_menu_catalogo',
-                        title: 'Catalogo',
-                        description: 'Productos disponibles',
-                      },
-                      {
                         id: 'main_menu_inventario',
                         title: 'Productos',
                         description: 'Crear, buscar y eliminar',
