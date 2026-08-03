@@ -4,7 +4,14 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": false,
-    "webpack": true
+    "webpack": true,
+    "assets": [
+      {
+        "include": "node_modules/pdfkit/js/data/**",
+        "outDir": "dist/data",
+        "watchAssets": true
+      }
+    ]
   },
   "projects": {
     "auth": {

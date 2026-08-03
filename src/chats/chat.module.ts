@@ -18,6 +18,8 @@ import { CreditModule } from 'src/credits/credit.module';
 import { CreditService } from 'src/credits/credit.service';
 import { OrderService } from 'src/orders/orders.service';
 import { OrderModule } from 'src/orders/orders.module';
+import { PdfService } from 'src/common/pdf/pdf.service';
+import { PdfModule } from 'src/common/pdf/pdf.module';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { OrderModule } from 'src/orders/orders.module';
     MessageModule,
     UserModule,
     OrderModule,
+    PdfModule,
   ],
   providers: [
     VercelGatewayService,
@@ -41,6 +44,7 @@ import { OrderModule } from 'src/orders/orders.module';
     MetaService,
     UsersService,
     OrderService,
+    PdfService,
   ],
   controllers: [ChatsController],
   exports: [],

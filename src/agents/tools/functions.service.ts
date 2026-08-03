@@ -42,7 +42,7 @@ export class FunctionService {
           appId,
         );
       case 'orders_today':
-        return await this.orderService.orderTotal();
+        return await this.orderService.generatePdfOrderTotal();
       case 'order_create':
         return await this.orderService.createList(args.products, appId);
       case 'barcodes_find':

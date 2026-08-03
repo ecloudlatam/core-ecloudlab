@@ -34,12 +34,6 @@ export class OrdersRepository {
     try {
       const db = this.supabaseService.getClient();
 
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-
       // 1. Obtener órdenes con sus detalles
       const { data: orders, error } = await db
         .from('orders')
@@ -56,8 +50,6 @@ export class OrdersRepository {
         )
       `,
         )
-        .gte('created_at', startOfDay.toISOString())
-        .lte('created_at', endOfDay.toISOString())
         .order('created_at', { ascending: false });
 
       if (error) throw error;

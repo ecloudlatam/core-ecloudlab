@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { OrdersRepository } from './orders.repository';
 import { OrderCreateDto } from './order-create.dto';
+import { PdfService } from 'src/common/pdf/pdf.service';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly ordersRepository: OrdersRepository) {}
+  constructor(
+    private readonly ordersRepository: OrdersRepository,
+    private readonly pdfService: PdfService,
+  ) {}
 
   async create(orderCreateDto: OrderCreateDto, appId: string) {
     console.log('appId ===', appId);
@@ -81,11 +85,16 @@ export class OrderService {
           totalCostToday: resp.totalCostToday,
           totalProfitToday: resp.totalProfitToday,
           totalOrders: resp.totalOrders,
-          orders: resp.orders.map((item) => item).join(''),
+          orders: resp.orders,
         },
       };
     } catch (error) {
       return { success: false, message: 'hubo errores para registrar datos' };
     }
+  }
+
+  async generatePdfOrderTotal() {
+    const resp = await this.ordersRepository.getOrdersToday();
+    return await this.pdfService.generateAndUploadDailyReportPdf(resp);
   }
 }
