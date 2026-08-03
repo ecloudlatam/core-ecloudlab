@@ -281,7 +281,7 @@ export class MetaService {
                         id: 'main_menu_ganancias',
                         title: 'Ganancias',
                         description: 'Consultar ganancias',
-                      }
+                      },
                     ],
                   },
                 ]

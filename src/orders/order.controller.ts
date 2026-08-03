@@ -23,7 +23,7 @@ export class OrderController {
 
   @Get('total')
   async total() {
-    const resp = await this.orderService.orderTotal()
-    return resp
+    const resp = await this.orderService.orderTotal();
+    return resp;
   }
 }
