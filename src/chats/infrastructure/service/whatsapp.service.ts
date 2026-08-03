@@ -82,6 +82,8 @@ export class WhatsAppService {
         userId,
       );
 
+      console.log('history ===', history);
+
       if (message.type == 'interactive') {
         // Cuando el usuario selecciona del menú, limpiar el intent anterior
         await this.sessionManagerService.clearLastIntent(appId, botId, userId);
