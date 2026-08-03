@@ -9,43 +9,160 @@ export class PdfService {
   /**
    * Genera el Buffer binario del reporte en formato PDF
    */
-  async generateDailyReportPdf(reportData: any): Promise<Buffer> {
-    // const PDFDocument = (await import('pdfkit/js/pdfkit.standalone')).default;
 
+  async generateDailyReportPdf(reportData: any): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const DocConstructor = (PDFDocument as any).default || PDFDocument;
-      const doc = new DocConstructor({ margin: 30 });
+      const doc = new DocConstructor({
+        margin: 40,
+        size: 'A4',
+      });
+
       const buffers: Buffer[] = [];
 
       doc.on('data', (chunk) => buffers.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(buffers)));
-      doc.on('error', (err) => reject(err));
+      doc.on('error', reject);
 
-      // Encabezado
-      doc.fontSize(18).text('Reporte Diario de Ventas', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(10).text(`Fecha: ${new Date().toLocaleDateString()}`);
-      doc.text(`Total Ventas: $${reportData.totalSalesToday}`);
-      doc.text(`Total Costo: $${reportData.totalCostToday}`);
-      doc.text(`Ganancia Neta: $${reportData.totalProfitToday}`);
-      doc.text(`Órdenes Totales: ${reportData.totalOrders}`);
-      doc.moveDown();
+      // ==========================
+      // TÍTULO
+      // ==========================
 
-      doc.fontSize(12).text('Detalle de Órdenes:', { underline: true });
+      doc
+        .fillColor('#1E3A8A')
+        .fontSize(22)
+        .font('Helvetica-Bold')
+        .text('REPORTE DIARIO DE VENTAS', {
+          align: 'center',
+        });
+
       doc.moveDown(0.5);
 
-      // Listado de Órdenes
-      reportData.orders.forEach((order: any, index: number) => {
-        doc
-          .fontSize(10)
-          .text(`${index + 1}. Orden ID: ${order.id} | Total: $${order.total}`);
-        order.order_details?.forEach((detail: any) => {
-          const prodName =
-            detail.product?.products?.name || 'Producto Desconocido';
-          doc.fontSize(8).text(`   - ${prodName} (Código: ${detail.barcode})`);
+      doc.strokeColor('#CCCCCC').moveTo(40, doc.y).lineTo(555, doc.y).stroke();
+
+      doc.moveDown();
+
+      // ==========================
+      // RESUMEN
+      // ==========================
+
+      const boxY = doc.y;
+
+      doc.roundedRect(40, boxY, 240, 95, 5).stroke('#CCCCCC');
+
+      doc.font('Helvetica').fontSize(11);
+
+      doc.text('Fecha:', 50, boxY + 10);
+      doc.text(new Date().toLocaleDateString(), 140, boxY + 10);
+
+      doc.text('Ventas:', 50, boxY + 30);
+      doc.text(`$${reportData.totalSalesToday}`, 140, boxY + 30);
+
+      doc.text('Costos:', 50, boxY + 50);
+      doc.text(`$${reportData.totalCostToday}`, 140, boxY + 50);
+
+      doc.text('Ganancia:', 50, boxY + 70);
+      doc.text(`$${reportData.totalProfitToday}`, 140, boxY + 70);
+
+      doc.text('Órdenes:', 50, boxY + 90);
+      doc.text(reportData.totalOrders.toString(), 140, boxY + 90);
+
+      let y = boxY + 130;
+
+      // ==========================
+      // TABLA
+      // ==========================
+
+      doc
+        .fontSize(13)
+        .font('Helvetica-Bold')
+        .fillColor('black')
+        .text('Detalle de órdenes', 40, y);
+
+      y += 25;
+
+      // Encabezado
+
+      doc.rect(40, y, 515, 22).fill('#1E3A8A');
+
+      doc
+        .fillColor('white')
+        .fontSize(10)
+        .text('#', 45, y + 6)
+        .text('Orden', 70, y + 6)
+        .text('Productos', 150, y + 6)
+        .text('Total', 500, y + 6, {
+          width: 45,
+          align: 'right',
         });
-        doc.moveDown(0.5);
+
+      y += 25;
+
+      doc.font('Helvetica');
+
+      reportData.orders.forEach((order: any, index: number) => {
+        // Salto de página
+
+        if (y > 720) {
+          doc.addPage();
+          y = 50;
+        }
+
+        // Fondo alternado
+
+        if (index % 2 === 0) {
+          doc.rect(40, y - 2, 515, 20).fill('#F5F5F5');
+        }
+
+        doc.fillColor('black');
+
+        doc.text(index + 1, 45, y);
+
+        doc.text(order.id.toString(), 70, y);
+
+        const products = order.order_details
+          ?.map((d: any) => {
+            const name = d.product?.products?.name ?? 'Producto';
+
+            return `${name}`;
+          })
+          .join('\n');
+
+        doc.text(products, 150, y, {
+          width: 300,
+        });
+
+        doc.text(`$${order.total}`, 500, y, {
+          width: 45,
+          align: 'right',
+        });
+
+        const rowHeight = Math.max(22, (order.order_details?.length || 1) * 15);
+
+        y += rowHeight;
+
+        doc.moveTo(40, y).lineTo(555, y).strokeColor('#DDDDDD').stroke();
+
+        y += 10;
       });
+
+      // ==========================
+      // PIE
+      // ==========================
+
+      doc.moveDown();
+
+      doc
+        .fontSize(8)
+        .fillColor('gray')
+        .text(
+          `Generado el ${new Date().toLocaleString()}`,
+          0,
+          doc.page.height - 50,
+          {
+            align: 'center',
+          },
+        );
 
       doc.end();
     });
