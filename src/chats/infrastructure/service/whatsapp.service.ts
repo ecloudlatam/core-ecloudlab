@@ -143,6 +143,8 @@ export class WhatsAppService {
       formData.append('file', audioBlob, 'audio_cliente.mp3');
 
       // 4. Realizamos la petición POST
+
+      console.time('elevenlabs');
       const response = await fetch(
         'https://api.elevenlabs.io/v1/speech-to-text',
         {
@@ -153,6 +155,7 @@ export class WhatsAppService {
           body: formData,
         },
       );
+      console.timeEnd('elevenlabs');
 
       if (!response.ok) {
         const errorData = await response.json();
