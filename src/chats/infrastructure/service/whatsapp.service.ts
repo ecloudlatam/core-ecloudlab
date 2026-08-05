@@ -162,6 +162,7 @@ export class WhatsAppService {
       }
 
       const data = await response.json();
+      console.log('data ===', data);
       return data.text;
     } catch (error) {
       this.logger.error(`Error procesando el buffer en ElevenLabs: ${error}`);
