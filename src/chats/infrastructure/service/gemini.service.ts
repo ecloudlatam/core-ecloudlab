@@ -23,6 +23,7 @@ export class GeminiService implements OnModuleInit {
     userId: number,
     agent: any,
   ) {
+    console.log('userid', userId);
     try {
       const { model, prompt } = agent;
 

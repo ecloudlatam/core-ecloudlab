@@ -11,6 +11,7 @@ export class OrderService {
   ) {}
 
   async create(orderCreateDto: OrderCreateDto, appId: string) {
+    console.log('app', appId);
     const { items } = orderCreateDto;
 
     const order = await this.ordersRepository.createOrder(orderCreateDto);
