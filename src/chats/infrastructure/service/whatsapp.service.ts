@@ -72,8 +72,6 @@ export class WhatsAppService {
     try {
       const message = await this.formatedText(body);
 
-      console.log('message ===', message);
-
       if (!message) return message;
 
       const history = await this.sessionManagerService.getSession(
@@ -81,8 +79,6 @@ export class WhatsAppService {
         botId,
         userId,
       );
-
-      console.log('history ===', history);
 
       if (message.type == 'interactive') {
         // Cuando el usuario selecciona del menú, limpiar el intent anterior
@@ -197,8 +193,6 @@ export class WhatsAppService {
       const routerPrincipal = success ? 'router_vendedor' : 'router_client';
       const agentPrincipal = await this.agentService.findOne(routerPrincipal);
 
-      console.log('agentPrincipal ====', agentPrincipal);
-
       // const config =
       // agentPrincipal.pivot_agents_tools(({ tools }) => tools.name) || [];
 
@@ -208,8 +202,6 @@ export class WhatsAppService {
         botId,
         userId,
       );
-
-      console.log('cachedIntent ====', cachedIntent);
 
       let routeInfo;
       let intent;

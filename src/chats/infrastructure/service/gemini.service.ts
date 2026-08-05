@@ -24,7 +24,6 @@ export class GeminiService implements OnModuleInit {
     agent: any,
   ) {
     try {
-      console.log('agent ===', agent, userId);
       const { model, prompt } = agent;
 
       const promptTemplate = PromptTemplate.fromTemplate(prompt);
@@ -148,12 +147,9 @@ export class GeminiService implements OnModuleInit {
     values: any,
   ) {
     try {
-      console.log('values ===', values);
       const { model, prompt, pivot_agents_tools } = values;
 
       const tools = this.mapTools(pivot_agents_tools);
-
-      console.log('tools ====', JSON.stringify(tools));
 
       const promptTemplate = PromptTemplate.fromTemplate(prompt);
 
@@ -206,12 +202,8 @@ export class GeminiService implements OnModuleInit {
         });
       }
 
-      console.log('resp', resp);
-
       // 3. Extracción segura del texto final de Gemini
       const responseMessage = resp?.text ?? '';
-
-      console.log('tools', toolsUsed);
 
       return {
         message:

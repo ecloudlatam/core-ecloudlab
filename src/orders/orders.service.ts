@@ -11,7 +11,6 @@ export class OrderService {
   ) {}
 
   async create(orderCreateDto: OrderCreateDto, appId: string) {
-    console.log('appId ===', appId);
     const { items } = orderCreateDto;
 
     const order = await this.ordersRepository.createOrder(orderCreateDto);
@@ -29,7 +28,6 @@ export class OrderService {
 
   generateInternalBarcode(productName: string) {
     try {
-      console.log('productName ===', productName);
       const cleanName = productName
         .toLowerCase()
         .normalize('NFD')
@@ -39,8 +37,6 @@ export class OrderService {
         .toUpperCase();
 
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-
-      console.log('cleanName', cleanName);
 
       return {
         success: true,

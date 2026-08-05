@@ -14,7 +14,6 @@ export class ProductsService {
   ) {}
 
   async create(products: CreateProductDto, appId: string) {
-    console.log('products ====', products);
     const { supplier } = products;
     const { data } = await this.supplierRepository.findOne(supplier);
     let supplier_id = '';
@@ -52,7 +51,6 @@ export class ProductsService {
     for (let index = 0; index < products.variants.length; index++) {
       const data = products.variants[index];
 
-      console.log('variants ===', data);
       const product = {
         product_id: id,
         unit_quantity: data.unit_quantity,
@@ -115,7 +113,6 @@ export class ProductsService {
   async createListProducts(products: any, appId: string): Promise<any> {
     const resp = [];
     try {
-      console.log('products', products);
       for (let index = 0; index < products.length; index++) {
         const element = products[index];
         const item = JSON.parse(element);

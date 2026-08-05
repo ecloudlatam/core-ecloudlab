@@ -170,7 +170,6 @@ export class PdfService {
 
   async generateAndUploadDailyReportPdf(reportData: any) {
     try {
-      console.log('reportData', reportData);
       // 1. Generar el Buffer del documento PDF
       const pdfBuffer = await this.generateDailyReportPdf(reportData);
 

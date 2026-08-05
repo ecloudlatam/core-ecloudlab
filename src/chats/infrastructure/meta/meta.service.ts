@@ -135,7 +135,6 @@ export class MetaService {
 
   async transcribeDocuments(body: any) {
     try {
-      console.log('body', body);
       const data = body[0];
       const resp = await fetch(data.document.url, {
         method: 'GET',
@@ -172,9 +171,7 @@ export class MetaService {
         },
       ];
       return docs;
-    } catch (error) {
-      console.log('error ===', error);
-    }
+    } catch (error) {}
   }
 
   async apiGetImg(body: any) {
